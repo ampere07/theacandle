@@ -48,14 +48,14 @@ const products: Product[] = [
     name: "Raurr",
     price: 24.99,
     description: "A soothing blend of vanilla and warm amber",
-    image: "https://images.unsplash.com/photo-1602874801007-bd36c362e1d6?auto=format&fit=crop&q=80&w=500",
+    image: "/image/bearflower.jpg",
   },
   {
     id: 2,
     name: "Lavender Fields",
     price: 29.99,
     description: "Pure lavender essence for relaxation",
-    image: "https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=500",
+    image: "/image/flower.jpg",
   },
   {
     id: 3,
@@ -69,7 +69,7 @@ const products: Product[] = [
     name: "Cozy Fireside",
     price: 32.99,
     description: "Woody notes with a touch of smoke",
-    image: "https://images.unsplash.com/photo-1605651202774-7d573fd3f12d?auto=format&fit=crop&q=80&w=500",
+    image: "/image/flowerwrap.jpg",
   },
 ];
 
