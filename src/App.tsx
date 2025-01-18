@@ -355,7 +355,7 @@ function App() {
                           <div key={item.id} className="flex items-center justify-between py-4 border-b">
                             <div>
                               <h3 className="font-medium">{item.name}</h3>
-                              <p className="text-sm text-stone-500">${item.price}</p>
+                              <p className="text-sm text-stone-500">QAR{item.price}</p>
                             </div>
                             <div className="flex items-center space-x-2">
                               <Button
@@ -386,7 +386,7 @@ function App() {
                         <div className="mt-4">
                           <div className="flex justify-between font-medium">
                             <span>Total:</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>QAR{total.toFixed(2)}</span>
                           </div>
                           <Dialog>
                             <DialogTrigger asChild>
