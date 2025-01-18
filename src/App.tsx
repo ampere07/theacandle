@@ -62,7 +62,7 @@ const products: Product[] = [
     name: "Ocean Breeze",
     price: 27.99,
     description: "Fresh marine scents with a hint of citrus",
-    image: "https://images.unsplash.com/photo-1636099826317-a1d5668cba0c?auto=format&fit=crop&q=80&w=500",
+    image: "/image/bear.jpg",
   },
   {
     id: 4,
