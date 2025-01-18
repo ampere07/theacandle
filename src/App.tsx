@@ -287,7 +287,7 @@ function App() {
                       <h3 className="text-sm font-medium text-stone-900">{product.name}</h3>
                       <p className="mt-1 text-sm text-stone-500">{product.description}</p>
                       <div className="mt-4 flex justify-between items-center">
-                        <p className="text-lg font-medium text-stone-900">${product.price}</p>
+                        <p className="text-lg font-medium text-stone-900">QAR{product.price}</p>
                         <Button
                           onClick={() => addToCart(product)}
                           className="bg-amber-600 hover:bg-amber-700"
