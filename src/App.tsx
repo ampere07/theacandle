@@ -19,6 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import Bear from './image/bear.jpg';
+import bearflower from './image/bearflower.jpg';
+import flower from './image/flower.jpg';
+import wrap from './image/flowerwrap.jpg';
 
 interface Product {
   id: number;
@@ -45,31 +49,31 @@ const sections: Section[] = [
 const products: Product[] = [
   {
     id: 1,
-    name: "Raurr",
+    name: "Bear Pangkalawan",
     price: 24.99,
     description: "A soothing blend of vanilla and warm amber",
-    image: "/image/bearflower.jpg",
+    image: Bear,
   },
   {
     id: 2,
-    name: "Lavender Fields",
+    name: "Mama Bear",
     price: 29.99,
     description: "Pure lavender essence for relaxation",
-    image: "/image/flower.jpg",
+    image: bearflower,
   },
   {
     id: 3,
-    name: "Ocean Breeze",
+    name: "Flower ng Mundo",
     price: 27.99,
     description: "Fresh marine scents with a hint of citrus",
-    image: "/image/bear.jpg",
+    image: flower,
   },
   {
     id: 4,
-    name: "Cozy Fireside",
+    name: "Torilla Flower",
     price: 32.99,
     description: "Woody notes with a touch of smoke",
-    image: "/image/flowerwrap.jpg",
+    image: wrap,
   },
 ];
 
