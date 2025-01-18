@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Flame, Menu, X, Mail, Phone, MapPin } from 'lucide-react';
+import { ShoppingCart, Menu, X, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -312,7 +312,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center cursor-pointer" onClick={() => handleNavigation('home')}>
-              <Flame className="h-8 w-8 text-amber-600" />
+              
               <span className="ml-2 text-2xl font-semibold text-stone-800">Reign</span>
             </div>
             
