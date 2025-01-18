@@ -312,7 +312,6 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center cursor-pointer" onClick={() => handleNavigation('home')}>
-              
               <span className="ml-2 text-2xl font-semibold text-stone-800">Reign</span>
             </div>
             
