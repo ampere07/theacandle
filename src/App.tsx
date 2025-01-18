@@ -45,7 +45,7 @@ const sections: Section[] = [
 const products: Product[] = [
   {
     id: 1,
-    name: "Vanilla Dreams",
+    name: "Raurr",
     price: 24.99,
     description: "A soothing blend of vanilla and warm amber",
     image: "https://images.unsplash.com/photo-1602874801007-bd36c362e1d6?auto=format&fit=crop&q=80&w=500",
