@@ -1,28 +1,26 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import bear from '../images/bear.jpg';
-import bearflower from '../images/bearflower.jpg';
-import flower from '../images/flower.jpg';
 
 const products = [
   {
     id: '1',
-    name: 'Mama Bear',
+    name: 'Vanilla Dream',
     price: 24.99,
-    image: bear,
+    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '2',
-    name: 'Bear Brand',
+    name: 'Lavender Mist',
     price: 29.99,
-    image: bearflower,
+    image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: '3',
-    name: 'Flower Pangkalawakan',
+    name: 'Ocean Breeze',
     price: 27.99,
-    image: flower,
+    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400'
   },
+  // Add more products as needed
 ];
 
 const Shop = () => {
