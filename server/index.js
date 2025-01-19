@@ -8,8 +8,18 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Update CORS to allow requests from your Vercel frontend
+app.use(cors({
+  origin: ['https://theacandle.vercel.app/', 'http://localhost:5173'],
+  credentials: true
+}));
+
 app.use(express.json());
+
+// Basic health check endpoint
+app.get('/', (req, res) => {
+  res.send('Reign Co API is running');
+});
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -35,6 +45,6 @@ app.get('/api/orders', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

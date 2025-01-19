@@ -1,26 +1,28 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import bear from '../images/bear.jpg';
+import bearflower from '../images/bearflower.jpg';
+import flower from '../images/flower.jpg';
 
 const products = [
   {
     id: '1',
-    name: 'Vanilla Dream',
+    name: 'Mama Bear',
     price: 24.99,
-    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400'
+    image: bear,
   },
   {
     id: '2',
-    name: 'Lavender Mist',
+    name: 'Bear Brand',
     price: 29.99,
-    image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400'
+    image: bearflower,
   },
   {
     id: '3',
-    name: 'Ocean Breeze',
+    name: 'Flower Pangkalawakan',
     price: 27.99,
-    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400'
+    image: flower,
   },
-  // Add more products as needed
 ];
 
 const Shop = () => {
@@ -39,7 +41,7 @@ const Shop = () => {
             />
             <div className="p-4">
               <h2 className="text-xl font-medium mb-2">{product.name}</h2>
-              <p className="text-stone-600 mb-4">${product.price}</p>
+              <p className="text-stone-600 mb-4">QAR{product.price}</p>
               <button
                 onClick={() => addToCart({ ...product, quantity: 1 })}
                 className="w-full bg-stone-800 text-white py-2 px-4 rounded-md hover:bg-stone-700"

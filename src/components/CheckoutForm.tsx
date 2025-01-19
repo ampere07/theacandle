@@ -15,10 +15,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     paymentMethod: 'cod' // 'cod' or 'meetup'
   });
 
+  const API_URL = import.meta.env.PROD 
+    ? 'https://theacandle.onrender.com' 
+    : 'http://localhost:3000';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/api/orders', {
+      await axios.post(`${API_URL}/api/orders`, {
         ...formData,
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
