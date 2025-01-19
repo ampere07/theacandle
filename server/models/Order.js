@@ -19,11 +19,9 @@ const orderSchema = new mongoose.Schema({
     required: true
   },
   items: [{
-    id: String,
     name: String,
     price: Number,
-    quantity: Number,
-    image: String
+    quantity: Number
   }],
   total: {
     type: Number,
