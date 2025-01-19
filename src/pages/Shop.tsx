@@ -39,7 +39,7 @@ const Shop = () => {
             />
             <div className="p-4">
               <h2 className="text-xl font-medium mb-2">{product.name}</h2>
-              <p className="text-stone-600 mb-4">${product.price}</p>
+              <p className="text-stone-600 mb-4">QAR{product.price}</p>
               <button
                 onClick={() => addToCart({ ...product, quantity: 1 })}
                 className="w-full bg-stone-800 text-white py-2 px-4 rounded-md hover:bg-stone-700"
