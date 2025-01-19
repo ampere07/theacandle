@@ -10,7 +10,7 @@ const products = [
   },
   {
     id: '2',
-    name: 'Lavender Mist',
+    name: 'agnas',
     price: 29.99,
     image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400'
   },
