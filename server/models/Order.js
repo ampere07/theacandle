@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+const moment = require('moment-timezone');
 const orderSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -34,7 +34,7 @@ const orderSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: () => moment.tz('Asia/Qatar').toDate()
   }
 });
 
