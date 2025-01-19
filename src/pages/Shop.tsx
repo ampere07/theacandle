@@ -3,8 +3,8 @@ import { useCart } from '../context/CartContext';
 import bear from '../images/bear.jpg';
 import bearflower from '../images/bearflower.jpg';
 import flower from '../images/flower.jpg';
-import flowerwarp from '../images/flowerwarp.jpg';
-import hearflower from '../images/hearflower.png';
+import flowerwarp from '../images/flowerwrap.jpg';
+import hearflower from '../images/heartflower.png';
 import small from '../images/small.jpg';
 
 const products = [
@@ -40,7 +40,7 @@ const products = [
   },
   {
     id: '6',
-    name: 'Juts',
+    name: 'Jutsdle',
     price: 29.99,
     image: small,
   },
