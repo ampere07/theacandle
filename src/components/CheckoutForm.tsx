@@ -16,7 +16,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   });
 
   const API_URL = import.meta.env.PROD 
-    ? 'https://your-render-api-domain.onrender.com' 
+    ? 'https://theacandle.onrender.com' 
     : 'http://localhost:3000';
 
   const handleSubmit = async (e: React.FormEvent) => {
