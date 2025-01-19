@@ -10,7 +10,7 @@ const app = express();
 
 // Update CORS to allow requests from your Vercel frontend
 app.use(cors({
-  origin: ['https://theacandle.vercel.app/', 'http://localhost:5173'],
+  origin: ['https://reign-co-candles.vercel.app', 'http://localhost:5173'],
   credentials: true
 }));
 
