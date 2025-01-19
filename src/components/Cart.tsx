@@ -46,7 +46,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                         />
                         <div className="flex-1">
                           <h3 className="font-medium">{item.name}</h3>
-                          <p className="text-sm text-gray-500">QAR{item.price}</p>
+                          <p className="text-sm text-gray-500">${item.price}</p>
                           <div className="flex items-center space-x-2 mt-2">
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -77,7 +77,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
               <div className="border-t p-4">
                 <div className="flex justify-between mb-4">
                   <span className="font-medium">Total</span>
-                  <span className="font-medium">QAR{total.toFixed(2)}</span>
+                  <span className="font-medium">${total.toFixed(2)}</span>
                 </div>
                 <button
                   onClick={() => setIsCheckingOut(true)}
