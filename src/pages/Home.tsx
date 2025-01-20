@@ -113,7 +113,7 @@ const Home = () => {
             </div>
           </div>
           <div className="border-t border-stone-700 mt-8 pt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.<br />Developed by Ampere</p>
           </div>
         </div>
       </footer>
