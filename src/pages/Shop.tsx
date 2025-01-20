@@ -1,47 +1,47 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
 import bear from '../images/bear.jpg';
-import bearflower from '../images/bearflower.jpg';
+import flowerbubble from '../images/flowerbubble.png';
 import flower from '../images/flower.jpg';
 import flowerwarp from '../images/flowerwrap.jpg';
-import heartflower from '../images/heartflower.png';
+import rose from '../images/rose.jpeg';
 import small from '../images/small.jpg';
 
 const products = [
   {
     id: '1',
-    name: 'Flower ni Papa P',
-    price: 24.99,
+    name: 'Heartfelt Blooms',
+    price: 8,
     image: flower,  // Use the imported image
   },
   {
     id: '2',
-    name: 'Mama Bear',
-    price: 29.99,
-    image: bearflower,  // Use the imported image
+    name: 'Blush of Peony',
+    price: 30,
+    image: rose,  // Use the imported image
   },
   {
     id: '3',
-    name: 'Bear Brand',
-    price: 27.99,
+    name: 'Bear in Bloom',
+    price: 15,
     image: bear,  // Use the imported image
   },
   {
     id: '4',
-    name: 'Tortilla Wrap',
-    price: 29.99,
+    name: 'Blooming Bouquet',
+    price: 15,
     image: flowerwarp,  // Use the imported image
   },
   {
     id: '5',
-    name: 'Flower ni Jhayvot G',
-    price: 29.99,
-    image: heartflower,  // Use the imported image
+    name: 'Heart Bubble Candle',
+    price: 35,
+    image: flowerbubble,  // Use the imported image
   },
   {
     id: '6',
-    name: 'Juts',
-    price: 29.99,
+    name: 'Rosy Reverie',
+    price: 15,
     image: small,  // Use the imported image
   },
 ];

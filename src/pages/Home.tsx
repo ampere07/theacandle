@@ -80,7 +80,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-xl font-serif text-white mb-4">Reign Co.</h3>
-              <p className="mb-4">Illuminate Your Space with Elegance</p>
+              <p className="mb-4">Embrace the glow.</p>
               <div className="flex items-center space-x-4">
                 <a href="https://www.instagram.com/reigncoqa?igsh=MXJ1cmJzcGQxcnR4Yg==" className="hover:text-white transition-colors">Instagram</a>
                 <a href="https://www.facebook.com/profile.php?id=61567747556945&mibextid=JRoKGi" className="hover:text-white transition-colors">Facebook</a>
@@ -91,7 +91,6 @@ const Home = () => {
               <ul className="space-y-2">
                 <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
                 <li><Link to="/shop" className="hover:text-white transition-colors">Shop</Link></li>
-                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
               </ul>
             </div>
             <div>
@@ -103,17 +102,17 @@ const Home = () => {
                 </li>
                 <li className="flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
-                  +63 123 456 7890
+                  +974 5531 1390
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-2" />
-                  hello@reignco.com
+                  manaorthea@gmail.com
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-stone-700 mt-8 pt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.<br />Developed by Ampere</p>
+            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.<br />This website is developed and maintained by Ampere.</p>
           </div>
         </div>
       </footer>
