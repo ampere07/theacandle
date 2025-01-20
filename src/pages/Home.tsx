@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, Heart, Mail, MapPin, Phone } from 'lucide-react';
+import { GiCrafting } from "react-icons/gi";
+import { VscArchive } from "react-icons/vsc";
+import { FaRegClock } from 'react-icons/fa';
+import { Heart, Mail, MapPin, Phone } from 'lucide-react';
 import logo from '../images/reigncologo.png';
 
 const Home = () => {
@@ -30,17 +33,17 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <GiCrafting className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Handcrafted</h3>
             <p className="text-stone-600">Each candle is carefully handcrafted with attention to detail</p>
           </div>
           <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <VscArchive className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Natural Ingredients</h3>
             <p className="text-stone-600">Made with 100% natural soy wax and essential oils</p>
           </div>
           <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <FaRegClock className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Long-lasting</h3>
             <p className="text-stone-600">Enjoy up to 50 hours of burning time</p>
           </div>
