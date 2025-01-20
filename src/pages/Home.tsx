@@ -82,9 +82,8 @@ const Home = () => {
               <h3 className="text-xl font-serif text-white mb-4">Reign Co.</h3>
               <p className="mb-4">Illuminate Your Space with Elegance</p>
               <div className="flex items-center space-x-4">
-                <a href="#" className="hover:text-white transition-colors">Instagram</a>
-                <a href="#" className="hover:text-white transition-colors">Facebook</a>
-                <a href="#" className="hover:text-white transition-colors">Pinterest</a>
+                <a href="https://www.instagram.com/reigncoqa?igsh=MXJ1cmJzcGQxcnR4Yg==" className="hover:text-white transition-colors">Instagram</a>
+                <a href="https://www.facebook.com/profile.php?id=61567747556945&mibextid=JRoKGi" className="hover:text-white transition-colors">Facebook</a>
               </div>
             </div>
             <div>
@@ -100,7 +99,7 @@ const Home = () => {
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  123 Candle Street, Metro Manila
+                  Nuaija, Qatar Doha
                 </li>
                 <li className="flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
