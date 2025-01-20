@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Heart, Mail, MapPin, Phone } from 'lucide-react';
+import logo from '../images/reigncologo.jpeg';
 
 const Home = () => {
   return (
@@ -51,11 +52,11 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
-              <img
-                src="https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=800"
-                alt="About Reign Co"
-                className="rounded-lg shadow-lg"
-              />
+            <img
+              src={logo} // Use the imported logo here
+              alt="About Reign Co"
+              className="rounded-lg shadow-lg"
+            />
             </div>
             <div>
               <h2 className="text-3xl font-serif mb-6">About Reign Co.</h2>
