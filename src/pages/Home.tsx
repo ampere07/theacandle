@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Heart, Mail, MapPin, Phone } from 'lucide-react';
-import logo from '../images/reigncologo.jpeg';
+import logo from '../images/reigncologo.png';
 
 const Home = () => {
   return (
