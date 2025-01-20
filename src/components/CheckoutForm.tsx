@@ -17,11 +17,17 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
 
   const API_URL = import.meta.env.PROD 
     ? 'https://theacandle.onrender.com' 
-    : 'http://localhost:3000';
+    : 'http://localhost:3000';  // Adjust as needed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log('Sending order data to backend:', {
+        ...formData,
+        items: cartItems,
+        total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      });
+      // Send the order data without storing the response variable
       await axios.post(`${API_URL}/api/orders`, {
         ...formData,
         items: cartItems,

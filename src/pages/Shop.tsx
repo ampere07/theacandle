@@ -1,26 +1,49 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import bear from '../images/bear.jpg';
+import bearflower from '../images/bearflower.jpg';
+import flower from '../images/flower.jpg';
+import flowerwarp from '../images/flowerwrap.jpg';
+import heartflower from '../images/heartflower.png';
+import small from '../images/small.jpg';
 
 const products = [
   {
     id: '1',
-    name: 'Vanilla Dream',
+    name: 'Flower ni Papa P',
     price: 24.99,
-    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400'
+    image: flower,  // Use the imported image
   },
   {
     id: '2',
-    name: 'Lavender Mist',
+    name: 'Mama Bear',
     price: 29.99,
-    image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400'
+    image: bearflower,  // Use the imported image
   },
   {
     id: '3',
-    name: 'Ocean Breeze',
+    name: 'Bear Brand',
     price: 27.99,
-    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400'
+    image: bear,  // Use the imported image
   },
-  // Add more products as needed
+  {
+    id: '4',
+    name: 'Tortilla Wrap',
+    price: 29.99,
+    image: flowerwarp,  // Use the imported image
+  },
+  {
+    id: '5',
+    name: 'Flower ni Jhayvot G',
+    price: 29.99,
+    image: heartflower,  // Use the imported image
+  },
+  {
+    id: '6',
+    name: 'Juts',
+    price: 29.99,
+    image: small,  // Use the imported image
+  },
 ];
 
 const Shop = () => {
