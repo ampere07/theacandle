@@ -14,31 +14,38 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     contact: '',
     paymentMethod: 'cod' // 'cod' or 'meetup'
   });
+  const [loading, setLoading] = useState(false); // Track the loading state
 
-  const API_URL = import.meta.env.PROD 
-    ? 'https://theacandle.onrender.com' 
+  const API_URL = import.meta.env.PROD
+    ? 'https://theacandle.onrender.com'
     : 'http://localhost:3000';  // Adjust as needed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true); // Disable the button on form submit
+
     try {
       console.log('Sending order data to backend:', {
         ...formData,
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
       });
+
       // Send the order data without storing the response variable
       await axios.post(`${API_URL}/api/orders`, {
         ...formData,
         items: cartItems,
         total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
       });
+
       clearCart();
       onCancel();
       alert('Order placed successfully!');
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Failed to place order. Please try again.');
+    } finally {
+      setLoading(false); // Re-enable the button after the request
     }
   };
 
@@ -94,8 +101,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         <button
           type="submit"
           className="flex-1 bg-stone-800 text-white py-2 px-4 rounded-md hover:bg-stone-700"
+          disabled={loading} // Disable the button when loading
         >
-          Place Order
+          {loading ? 'Placing Order...' : 'Place Order'} {/* Show loading text */}
         </button>
         <button
           type="button"
