@@ -9,9 +9,14 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
-  credentials: true
+  origin: ['https://reignco.vercel.app', 'http://localhost:5173'], // Your allowed frontend origins
+  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true // Allow cookies or tokens
 }));
+
+// Explicitly handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
