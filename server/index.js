@@ -9,8 +9,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
-  credentials: true,
+  origin: ['https://reign-co-candles.vercel.app', 'http://localhost:5173'],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -23,6 +23,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+// Create order
 app.post('/api/orders', async (req, res) => {
   try {
     const order = new Order(req.body);
@@ -33,12 +34,27 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
+// Get all orders
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await Order.find();
+    const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Update order status
+app.patch('/api/orders/:id', async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: req.body.status },
+      { new: true }
+    );
+    res.json(order);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
