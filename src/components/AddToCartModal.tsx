@@ -33,4 +33,6 @@ const AddToCartModal: React.FC<AddToCartModalProps> = ({ isOpen, onClose, produc
       </div>
     </div>
   );
-}
+};
+
+export default AddToCartModal;

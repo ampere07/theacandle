@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ['https://reign-co-candles.vercel.app', 'http://localhost:5173'],
+  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
   credentials: true
 }));
 

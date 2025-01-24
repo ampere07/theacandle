@@ -26,9 +26,7 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
 
-  const API_URL = import.meta.env.PROD 
-    ? 'https://theacandle.onrender.com' 
-    : 'http://localhost:3000';
+  const API_URL = 'https://theacandle.onrender.com';
 
   useEffect(() => {
     if (isAuthenticated) {

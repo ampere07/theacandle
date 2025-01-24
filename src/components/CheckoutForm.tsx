@@ -76,9 +76,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     coordinates: { lat: 0, lng: 0 }
   });
 
-  const API_URL = import.meta.env.PROD 
-    ? 'https://theacandle.onrender.com' 
-    : 'http://localhost:3000';
+  const API_URL = 'https://theacandle.onrender.com';
 
   const handleLocationChange = async (latlng: LatLng) => {
     try {
