@@ -12,17 +12,17 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     name: '',
     address: '',
     contact: '',
-    paymentMethod: 'cod' // 'cod' or 'meetup'
+    paymentMethod: 'cod'
   });
-  const [loading, setLoading] = useState(false); // Track the loading state
+  const [loading, setLoading] = useState(false); 
 
   const API_URL = import.meta.env.PROD
     ? 'https://theacandle.onrender.com'
-    : 'http://localhost:3000';  // Adjust as needed
+    : 'http://localhost:3000'; 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); // Disable the button on form submit
+    setLoading(true);
 
     try {
       console.log('Sending order data to backend:', {

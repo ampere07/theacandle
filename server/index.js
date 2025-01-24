@@ -8,15 +8,13 @@ dotenv.config();
 
 const app = express();
 
-// Update CORS to allow requests from your Vercel frontend
 app.use(cors({
-  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'], // Add both the live frontend and local dev
-  credentials: true, // Allow credentials (cookies, headers)
+  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
+  credentials: true,
 }));
 
 app.use(express.json());
 
-// Basic health check endpoint
 app.get('/', (req, res) => {
   res.send('Reign Co API is running');
 });
