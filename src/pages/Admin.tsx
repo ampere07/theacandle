@@ -114,20 +114,31 @@ const Admin = () => {
       alert('Please select an image');
       return;
     }
-
+  
+    if (!newProduct.collection) {
+      alert('Please select a collection');
+      return;
+    }
+  
     const formData = new FormData();
     formData.append('name', newProduct.name);
-    formData.append('price', newProduct.price);
+    formData.append('price', newProduct.price.toString());
     formData.append('description', newProduct.description);
     formData.append('collection', newProduct.collection);
     formData.append('image', newProduct.image);
-
+  
+    // Log the FormData contents for debugging
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+  
     try {
-      await axios.post(`${API_URL}/api/products`, formData, {
+      const response = await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log('Product added successfully:', response.data);
       setNewProduct({
         name: '',
         price: '',
@@ -137,9 +148,9 @@ const Admin = () => {
       });
       setIsAddingProduct(false);
       fetchProducts();
-    } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Failed to add product');
+    } catch (error: any) {
+      console.error('Error adding product:', error.response?.data || error.message);
+      alert(`Failed to add product: ${error.response?.data?.error || error.message}`);
     }
   };
 
