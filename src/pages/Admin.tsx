@@ -31,7 +31,7 @@ const Admin = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState('orders');
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [newCollection, setNewCollection] = useState({ name: '', description: '' });
@@ -43,7 +43,6 @@ const Admin = () => {
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [showCollectionForm, setShowCollectionForm] = useState(false);
 
   const API_URL = 'https://theacandle.onrender.com';
 
@@ -97,13 +96,11 @@ const Admin = () => {
   const handleAddCollection = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/api/collections`, newCollection);
+      await axios.post(`${API_URL}/api/collections`, newCollection);
       setNewCollection({ name: '', description: '' });
-      setShowCollectionForm(false);
       fetchCollections();
     } catch (error) {
       console.error('Error adding collection:', error);
-      alert('Failed to add collection. Please try again.');
     }
   };
 
@@ -136,11 +133,9 @@ const Admin = () => {
       });
       setSelectedImage(null);
       setPreviewUrl('');
-      setSelectedCollection(null);
       fetchProducts();
     } catch (error) {
       console.error('Error adding product:', error);
-      alert('Failed to add product. Please try again.');
     }
   };
 
@@ -302,15 +297,15 @@ const Admin = () => {
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-medium">Collections</h3>
                 <button
-                  onClick={() => setShowCollectionForm(!showCollectionForm)}
+                  onClick={() => setSelectedCollection('')}
                   className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-md hover:bg-stone-700"
                 >
                   <FolderPlus className="w-5 h-5 mr-2" />
-                  {showCollectionForm ? 'Cancel' : 'Add Collection'}
+                  Add Collection
                 </button>
               </div>
               
-              {showCollectionForm && (
+              {selectedCollection === '' && (
                 <form onSubmit={handleAddCollection} className="mb-6 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Collection Name</label>
@@ -365,7 +360,7 @@ const Admin = () => {
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-medium">Products in {collections.find(c => c._id === selectedCollection)?.name}</h3>
                   <button
-                    onClick={() => setSelectedCollection(null)}
+                    onClick={() => setSelectedCollection('')}
                     className="text-stone-600 hover:text-stone-900"
                   >
                     Back to Collections
