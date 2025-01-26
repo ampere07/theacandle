@@ -116,11 +116,12 @@ const Admin = () => {
     }
 
     const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('price', newProduct.price);
-    formData.append('description', newProduct.description);
-    formData.append('collection', newProduct.collection);
-    formData.append('image', newProduct.image);
+    formData.append('name', newProduct.name);           // String
+    formData.append('price', newProduct.price);         // String/Number
+    formData.append('description', newProduct.description); // String
+    formData.append('collection', newProduct.collection);   // Collection ID
+    formData.append('image', newProduct.image);         // File
+
 
     try {
       await axios.post(`${API_URL}/api/products`, formData, {

@@ -30,13 +30,14 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'server/uploads/');
+    cb(null, path.join(__dirname, 'uploads')); // Ensure this path exists
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
+
 
 const upload = multer({ storage: storage });
 
@@ -83,9 +84,10 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
       name,
       price: Number(price),
       description,
-      image: `/uploads/${req.file.filename}`,
+      image: `/uploads/${req.file.filename}`, // Uses req.file.filename
       collection
     });
+
     await product.save();
     res.status(201).json(product);
   } catch (error) {
