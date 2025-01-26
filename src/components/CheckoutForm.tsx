@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import { MapPin } from 'lucide-react';
@@ -17,7 +17,11 @@ const MEETUP_LOCATIONS = [
   { id: 'megamall', name: 'SM Megamall', address: 'Ortigas Center, Mandaluyong City' },
 ];
 
-// Fix for the default marker icon
+// Delivery rate constants
+const BASE_DELIVERY_RATE = 10; // Base rate in QAR
+const RATE_PER_KM = 2; // Additional rate per kilometer in QAR
+const MIN_DELIVERY_CHARGE = 15; // Minimum delivery charge in QAR
+
 const defaultIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -26,13 +30,31 @@ const defaultIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-// Doha, Qatar coordinates
 const DOHA_CENTER = [25.2854, 51.5310];
 const SELLER_LOCATION = [25.2457, 51.5330]; // Nuaija coordinates
 const QATAR_BOUNDS = new LatLngBounds(
   [24.4539, 50.7500], // Southwest
   [26.1834, 51.6834]  // Northeast
 );
+
+// Calculate distance between two points using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Calculate delivery rate based on distance
+function calculateDeliveryRate(distance: number): number {
+  const rate = BASE_DELIVERY_RATE + (distance * RATE_PER_KM);
+  return Math.max(MIN_DELIVERY_CHARGE, Math.round(rate));
+}
 
 function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLng) => void }) {
   const [position, setPosition] = useState<LatLng | null>(null);
@@ -54,8 +76,7 @@ function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLn
       <Marker 
         position={SELLER_LOCATION as [number, number]} 
         icon={defaultIcon}
-      >
-      </Marker>
+      />
       <Circle 
         center={SELLER_LOCATION as [number, number]}
         radius={1000}
@@ -75,6 +96,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     meetupLocation: MEETUP_LOCATIONS[0].id,
     coordinates: { lat: 0, lng: 0 }
   });
+  const [deliveryRate, setDeliveryRate] = useState(0);
+  const [distance, setDistance] = useState(0);
 
   const API_URL = 'https://theacandle.onrender.com';
 
@@ -85,6 +108,17 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       );
       
       if (response.data.display_name) {
+        // Calculate distance and delivery rate
+        const dist = calculateDistance(
+          SELLER_LOCATION[0], 
+          SELLER_LOCATION[1], 
+          latlng.lat, 
+          latlng.lng
+        );
+        const rate = calculateDeliveryRate(dist);
+        
+        setDistance(dist);
+        setDeliveryRate(rate);
         setFormData({
           ...formData,
           address: response.data.display_name,
@@ -96,6 +130,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     }
   };
 
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = formData.paymentMethod === 'cod' ? subtotal + deliveryRate : subtotal;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -105,7 +142,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           ? MEETUP_LOCATIONS.find(loc => loc.id === formData.meetupLocation)?.address 
           : formData.address,
         items: cartItems,
-        total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        subtotal,
+        deliveryRate: formData.paymentMethod === 'cod' ? deliveryRate : 0,
+        total,
+        distance: formData.paymentMethod === 'cod' ? distance : 0
       };
 
       await axios.post(`${API_URL}/api/orders`, orderData);
@@ -202,8 +242,39 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
             </MapContainer>
           </div>
           <p className="mt-1 text-sm text-gray-500">Click on the map to set your delivery location</p>
+          
+          {distance > 0 && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-medium text-gray-900">Delivery Details</h3>
+              <p className="text-sm text-gray-600 mt-1">Distance: {distance.toFixed(1)} km</p>
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-gray-600">Base Rate: {BASE_DELIVERY_RATE} QAR</p>
+                <p className="text-sm text-gray-600">Distance Rate: {(distance * RATE_PER_KM).toFixed(1)} QAR</p>
+                <p className="font-medium text-gray-900">Total Delivery Fee: {deliveryRate} QAR</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      <div className="border-t pt-4 mt-4">
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Subtotal:</span>
+            <span>{subtotal.toFixed(2)} QAR</span>
+          </div>
+          {formData.paymentMethod === 'cod' && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Delivery Fee:</span>
+              <span>{deliveryRate.toFixed(2)} QAR</span>
+            </div>
+          )}
+          <div className="flex justify-between font-medium text-lg">
+            <span>Total:</span>
+            <span>{total.toFixed(2)} QAR</span>
+          </div>
+        </div>
+      </div>
 
       <div className="flex space-x-4 pt-4">
         <button
