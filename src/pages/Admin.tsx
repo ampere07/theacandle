@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, ShoppingBag, LogOut, Plus, X } from 'lucide-react';
+import { Package, ShoppingBag, LogOut, Plus, X , Trash2 } from 'lucide-react';
 
 interface Order {
   _id: string;
@@ -153,6 +153,34 @@ const Admin = () => {
       alert(`Failed to add product: ${error.response?.data?.error || error.message}`);
     }
   };
+  const handleDeleteCollection = async (collectionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this collection? This will also delete all products in this collection.')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/api/collections/${collectionId}`);
+      fetchCollections();
+      fetchProducts(); // Refresh products as well since some might have been deleted
+    } catch (error) {
+      console.error('Error deleting collection:', error);
+      alert('Failed to delete collection');
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/api/products/${productId}`);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -195,7 +223,7 @@ const Admin = () => {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-serif">Admin Dashboard</h1>
+            <h1 className="text-2xl font-serif">Reign Co. Dashboard</h1>
             <button
               onClick={handleLogout}
               className="flex items-center text-stone-600 hover:text-stone-900"
@@ -450,6 +478,13 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => handleDeleteCollection(collections._id)}
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                      title="Delete collection"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                     <img
                       src={`${API_URL}${product.image}`}
                       alt={product.name}
