@@ -18,9 +18,9 @@ const MEETUP_LOCATIONS = [
 ];
 
 // Delivery rate constants
-const BASE_DELIVERY_RATE = 10; // Base rate in QAR
+const BASE_DELIVERY_RATE = 5; // Base rate in QAR
 const RATE_PER_KM = 2; // Additional rate per kilometer in QAR
-const MIN_DELIVERY_CHARGE = 15; // Minimum delivery charge in QAR
+const MIN_DELIVERY_CHARGE = 10; // Minimum delivery charge in QAR
 
 const defaultIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
