@@ -28,7 +28,7 @@ const defaultIcon = new Icon({
 
 // Doha, Qatar coordinates
 const DOHA_CENTER = [25.2854, 51.5310];
-const SELLER_LOCATION = [25.2606, 51.4506]; // Nuaija coordinates
+const SELLER_LOCATION = [25.2457, 51.5330]; // Nuaija coordinates
 const QATAR_BOUNDS = new LatLngBounds(
   [24.4539, 50.7500], // Southwest
   [26.1834, 51.6834]  // Northeast
