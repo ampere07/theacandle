@@ -16,12 +16,9 @@ dotenv.config();
 
 const app = express();
 
-// Updated CORS configuration to allow requests from both development and production domains
 app.use(cors({
-  origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
+  credentials: true
 }));
 
 app.use(express.json());
@@ -30,14 +27,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads')); // Ensure this path exists
+    cb(null, 'server/uploads/');
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
-
 
 const upload = multer({ storage: storage });
 
@@ -84,10 +80,9 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
       name,
       price: Number(price),
       description,
-      image: `/uploads/${req.file.filename}`, // Uses req.file.filename
+      image: `/uploads/${req.file.filename}`,
       collection
     });
-
     await product.save();
     res.status(201).json(product);
   } catch (error) {
