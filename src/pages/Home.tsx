@@ -7,6 +7,26 @@ import logo from '../images/logo.jpg';
 const Home = () => {
   return (
     <div className="min-h-screen bg-stone-50">
+      <div className="relative h-[70vh]">
+        <img
+          src="https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1920"
+          alt="Candles Banner"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="text-5xl font-serif mb-4">Reign Co.</h1>
+            <p className="text-xl mb-8">Illuminate Your Space with Elegance</p>
+            <Link
+              to="/shop"
+              className="bg-stone-800 text-white px-8 py-3 rounded-md hover:bg-stone-700 transition-colors"
+            >
+              Shop Now
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -22,27 +42,6 @@ const Home = () => {
           </div>
           <div className="text-center p-6">
             <Clock className="w-12 h-12 mx-auto mb-4 text-stone-700" />
-            <h3 className="text-xl font-medium mb-2">Long-lasting</h3>
-            <p className="text-stone-600">Enjoy up to 50 hours of burning time</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
-            <h3 className="text-xl font-medium mb-2">Handcrafted</h3>
-            <p className="text-stone-600">Each candle is carefully handcrafted with attention to detail</p>
-          </div>
-          <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
-            <h3 className="text-xl font-medium mb-2">Natural Ingredients</h3>
-            <p className="text-stone-600">Made with 100% natural soy wax and essential oils</p>
-          </div>
-          <div className="text-center p-6">
-            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Long-lasting</h3>
             <p className="text-stone-600">Enjoy up to 50 hours of burning time</p>
           </div>
