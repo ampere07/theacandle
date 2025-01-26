@@ -109,7 +109,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       };
 
       await axios.post(`${API_URL}/api/orders`, orderData);
-      
       clearCart();
       onCancel();
       alert('Order placed successfully!');

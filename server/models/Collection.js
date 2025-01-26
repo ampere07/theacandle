@@ -4,15 +4,16 @@ const collectionSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
+    unique: true
   },
   description: {
     type: String,
-    required: true,
-    trim: true
+    default: ''
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
 export const Collection = mongoose.model('Collection', collectionSchema);

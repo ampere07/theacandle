@@ -3,30 +3,29 @@ import mongoose from 'mongoose';
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   price: {
     type: Number,
-    required: true,
-    min: 0
+    required: true
+  },
+  description: {
+    type: String,
+    default: ''
   },
   image: {
     type: String,
     required: true
   },
-  description: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  collectionId: {
+  collection: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Collection',
     required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true
 });
 
 export const Product = mongoose.model('Product', productSchema);

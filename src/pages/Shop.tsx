@@ -1,110 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import AddToCartModal from '../components/AddToCartModal';
-import axios from 'axios';
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  collectionId: string;
-}
-
-interface Collection {
-  _id: string;
-  name: string;
-  description: string;
-}
+const products = [
+  {
+    id: '1',
+    name: 'Vanilla Dream',
+    price: 24.99,
+    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400',
+    description: 'A warm and comforting vanilla scent'
+  },
+  {
+    id: '2',
+    name: 'Lavender Mist',
+    price: 29.99,
+    image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400',
+    description: 'Calming lavender essence for relaxation'
+  },
+  {
+    id: '3',
+    name: 'Ocean Breeze',
+    price: 27.99,
+    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400',
+    description: 'Fresh marine scent reminiscent of the sea'
+  },
+  {
+    id: '4',
+    name: 'Desert Rose',
+    price: 32.99,
+    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400',
+    description: 'Exotic floral scent inspired by Arabian roses'
+  }
+];
 
 const Shop = () => {
   const { addToCart } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [selectedCollection, setSelectedCollection] = useState<string>('');
 
-  const API_URL = 'https://theacandle.onrender.com';
-
-  useEffect(() => {
-    fetchCollections();
-    fetchProducts();
-  }, []);
-
-  const fetchCollections = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/collections`);
-      setCollections(response.data);
-    } catch (error) {
-      console.error('Error fetching collections:', error);
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/products`);
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
-
-  const handleAddToCart = (product: Product) => {
-    const cartItem = {
-      id: product._id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1
-    };
-    addToCart(cartItem);
+  const handleAddToCart = (product: any) => {
+    addToCart({ ...product, quantity: 1 });
     setSelectedProduct(product.name);
     setModalOpen(true);
   };
 
-  const filteredProducts = selectedCollection
-    ? products.filter(product => product.collectionId === selectedCollection)
-    : products;
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-serif mb-8 text-center">Our Collection</h1>
-      
-      {/* Collection Filter */}
-      <div className="mb-8">
-        <div className="flex flex-wrap gap-4 justify-center">
-          <button
-            onClick={() => setSelectedCollection('')}
-            className={`px-4 py-2 rounded-md ${
-              selectedCollection === ''
-                ? 'bg-stone-800 text-white'
-                : 'bg-white text-stone-800 border border-stone-200'
-            }`}
-          >
-            All Collections
-          </button>
-          {collections.map((collection) => (
-            <button
-              key={collection._id}
-              onClick={() => setSelectedCollection(collection._id)}
-              className={`px-4 py-2 rounded-md ${
-                selectedCollection === collection._id
-                  ? 'bg-stone-800 text-white'
-                  : 'bg-white text-stone-800 border border-stone-200'
-              }`}
-            >
-              {collection.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {filteredProducts.map((product) => (
-          <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+        {products.map((product) => (
+          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
             <img
               src={product.image}
               alt={product.name}
@@ -124,10 +69,9 @@ const Shop = () => {
           </div>
         ))}
       </div>
-
-      <AddToCartModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+      <AddToCartModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
         productName={selectedProduct}
       />
     </div>

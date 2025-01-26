@@ -2,26 +2,50 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Order } from './models/Order.js';
-import { Product } from './models/Product.js';
 import { Collection } from './models/Collection.js';
+import { Product } from './models/Product.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
 const app = express();
 
 app.use(cors({
-  origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: ['https://reign-co.vercel.app', 'http://localhost:5173'],
   credentials: true
 }));
 
-app.options('*', cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'server/uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Create uploads directory if it doesn't exist
+import fs from 'fs';
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 app.get('/', (req, res) => {
-  res.send('Thea Candle API is running');
+  res.send('Reign Co API is running');
 });
 
 mongoose.connect(process.env.MONGODB_URI)
@@ -41,28 +65,24 @@ app.post('/api/collections', async (req, res) => {
 
 app.get('/api/collections', async (req, res) => {
   try {
-    const collections = await Collection.find();
+    const collections = await Collection.find().sort({ createdAt: -1 });
     res.json(collections);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.delete('/api/collections/:id', async (req, res) => {
-  try {
-    await Collection.findByIdAndDelete(req.params.id);
-    // Also delete all products in this collection
-    await Product.deleteMany({ collectionId: req.params.id });
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 // Product routes
-app.post('/api/products', async (req, res) => {
+app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const { name, price, description, collection } = req.body;
+    const product = new Product({
+      name,
+      price: Number(price),
+      description,
+      image: `/uploads/${req.file.filename}`,
+      collection
+    });
     await product.save();
     res.status(201).json(product);
   } catch (error) {
@@ -72,19 +92,12 @@ app.post('/api/products', async (req, res) => {
 
 app.get('/api/products', async (req, res) => {
   try {
-    const products = await Product.find().populate('collectionId');
+    const products = await Product.find()
+      .populate('collection')
+      .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
-  }
-});
-
-app.delete('/api/products/:id', async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
-    res.status(204).send();
-  } catch (error) {
-    res.status(400).json({ error: error.message });
   }
 });
 
