@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url';
 import { Order } from './models/Order.js';
 import { Collection } from './models/Collection.js';
 import { Product } from './models/Product.js';
-import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +38,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+import fs from 'fs';
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -67,38 +67,6 @@ app.get('/api/collections', async (req, res) => {
   try {
     const collections = await Collection.find().sort({ createdAt: -1 });
     res.json(collections);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Add delete route for collections
-app.delete('/api/collections/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Find all products in this collection
-    const products = await Product.find({ collection: id });
-    
-    // Delete all product images
-    for (const product of products) {
-      const imagePath = path.join(__dirname, product.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-    
-    // Delete all products in the collection
-    await Product.deleteMany({ collection: id });
-    
-    // Delete the collection
-    const deletedCollection = await Collection.findByIdAndDelete(id);
-    
-    if (!deletedCollection) {
-      return res.status(404).json({ message: 'Collection not found' });
-    }
-    
-    res.json({ message: 'Collection and associated products deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -133,33 +101,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Add delete route for products
-app.delete('/api/products/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Find the product
-    const product = await Product.findById(id);
-    
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    
-    // Delete the product image
-    const imagePath = path.join(__dirname, product.image);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-    }
-    
-    // Delete the product
-    await product.deleteOne();
-    
-    res.json({ message: 'Product deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
+// Add new route to get products by collection ID
 app.get('/api/products/collection/:collectionId', async (req, res) => {
   try {
     const { collectionId } = req.params;
