@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, ShoppingBag, LogOut, Plus, X } from 'lucide-react';
+import { Package, ShoppingBag, LogOut, FolderPlus, Plus } from 'lucide-react';
 
 interface Order {
   _id: string;
@@ -28,21 +28,21 @@ interface Product {
 
 const Admin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState('orders');
+  const [selectedCollection, setSelectedCollection] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [isAddingCollection, setIsAddingCollection] = useState(false);
-  const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [newCollection, setNewCollection] = useState({ name: '', description: '' });
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     description: '',
-    collection: '',
-    image: null as File | null
+    collection: ''
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const API_URL = 'https://theacandle.onrender.com';
 
@@ -81,6 +81,64 @@ const Admin = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddCollection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API_URL}/api/collections`, newCollection);
+      setNewCollection({ name: '', description: '' });
+      fetchCollections();
+    } catch (error) {
+      console.error('Error adding collection:', error);
+    }
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedImage) {
+      alert('Please select an image');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', newProduct.name);
+    formData.append('price', newProduct.price);
+    formData.append('description', newProduct.description);
+    formData.append('collection', newProduct.collection);
+    formData.append('image', selectedImage);
+
+    try {
+      await axios.post(`${API_URL}/api/products`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      setNewProduct({
+        name: '',
+        price: '',
+        description: '',
+        collection: ''
+      });
+      setSelectedImage(null);
+      setPreviewUrl('');
+      fetchProducts();
+    } catch (error) {
+      console.error('Error adding product:', error);
+    }
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (loginData.username === 'admin' && loginData.password === 'admin') {
@@ -93,54 +151,6 @@ const Admin = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setLoginData({ username: '', password: '' });
-  };
-
-  const handleAddCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/api/collections`, newCollection);
-      setNewCollection({ name: '', description: '' });
-      setIsAddingCollection(false);
-      fetchCollections();
-    } catch (error) {
-      console.error('Error adding collection:', error);
-      alert('Failed to add collection');
-    }
-  };
-
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProduct.image) {
-      alert('Please select an image');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('price', newProduct.price);
-    formData.append('description', newProduct.description);
-    formData.append('collection', newProduct.collection);
-    formData.append('image', newProduct.image);
-
-    try {
-      await axios.post(`${API_URL}/api/products`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setNewProduct({
-        name: '',
-        price: '',
-        description: '',
-        collection: '',
-        image: null
-      });
-      setIsAddingProduct(false);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Failed to add product');
-    }
   };
 
   if (!isAuthenticated) {
@@ -282,180 +292,164 @@ const Admin = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Collections Management */}
+            {/* Collections Section */}
             <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-medium">Collections</h3>
                 <button
-                  onClick={() => setIsAddingCollection(true)}
+                  onClick={() => setSelectedCollection('')}
                   className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-md hover:bg-stone-700"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <FolderPlus className="w-5 h-5 mr-2" />
                   Add Collection
                 </button>
               </div>
-
-              {isAddingCollection && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-lg font-medium">Add New Collection</h4>
-                      <button onClick={() => setIsAddingCollection(false)}>
-                        <X className="w-6 h-6" />
-                      </button>
-                    </div>
-                    <form onSubmit={handleAddCollection} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={newCollection.name}
-                          onChange={(e) => setNewCollection({ ...newCollection, name: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea
-                          value={newCollection.description}
-                          onChange={(e) => setNewCollection({ ...newCollection, description: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full bg-stone-800 text-white py-2 px-4 rounded-md hover:bg-stone-700"
-                      >
-                        Add Collection
-                      </button>
-                    </form>
+              
+              {selectedCollection === '' && (
+                <form onSubmit={handleAddCollection} className="mb-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Collection Name</label>
+                    <input
+                      type="text"
+                      value={newCollection.name}
+                      onChange={(e) => setNewCollection({ ...newCollection, name: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                      required
+                    />
                   </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {collections.map((collection) => (
-                  <div key={collection._id} className="border rounded-lg p-4">
-                    <h4 className="font-medium">{collection.name}</h4>
-                    <p className="text-sm text-gray-500">{collection.description}</p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      value={newCollection.description}
+                      onChange={(e) => setNewCollection({ ...newCollection, description: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                      required
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Products Management */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Products</h3>
-                <button
-                  onClick={() => setIsAddingProduct(true)}
-                  className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-md hover:bg-stone-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Product
-                </button>
-              </div>
-
-              {isAddingProduct && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                  <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-lg font-medium">Add New Product</h4>
-                      <button onClick={() => setIsAddingProduct(false)}>
-                        <X className="w-6 h-6" />
-                      </button>
-                    </div>
-                    <form onSubmit={handleAddProduct} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={newProduct.name}
-                          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Price</label>
-                        <input
-                          type="number"
-                          required
-                          step="0.01"
-                          value={newProduct.price}
-                          onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea
-                          value={newProduct.description}
-                          onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Collection</label>
-                        <select
-                          required
-                          value={newProduct.collection}
-                          onChange={(e) => setNewProduct({ ...newProduct, collection: e.target.value })}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-                        >
-                          <option value="">Select a collection</option>
-                          {collections.map((collection) => (
-                            <option key={collection._id} value={collection._id}>
-                              {collection.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Image</label>
-                        <input
-                          type="file"
-                          required
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            setNewProduct({ ...newProduct, image: file });
-                          }}
-                          className="mt-1 block w-full"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full bg-stone-800 text-white py-2 px-4 rounded-md hover:bg-stone-700"
-                      >
-                        Add Product
-                      </button>
-                    </form>
-                  </div>
-                </div>
+                  <button
+                    type="submit"
+                    className="bg-stone-800 text-white px-4 py-2 rounded-md hover:bg-stone-700"
+                  >
+                    Create Collection
+                  </button>
+                </form>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <div key={product._id} className="border rounded-lg overflow-hidden">
-                    <img
-                      src={`${API_URL}${product.image}`}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h4 className="font-medium">{product.name}</h4>
-                      <p className="text-sm text-gray-500">{product.description}</p>
-                      <p className="text-sm font-medium mt-2">${product.price}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Collection: {product.collection?.name}
-                      </p>
-                    </div>
+                {collections.map((collection) => (
+                  <div
+                    key={collection._id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <h4 className="font-medium mb-2">{collection.name}</h4>
+                    <p className="text-sm text-gray-600 mb-4">{collection.description}</p>
+                    <button
+                      onClick={() => setSelectedCollection(collection._id)}
+                      className="text-stone-600 hover:text-stone-900"
+                    >
+                      Manage Products
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Products Section */}
+            {selectedCollection && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-medium">Products in {collections.find(c => c._id === selectedCollection)?.name}</h3>
+                  <button
+                    onClick={() => setSelectedCollection('')}
+                    className="text-stone-600 hover:text-stone-900"
+                  >
+                    Back to Collections
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddProduct} className="mb-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Product Name</label>
+                    <input
+                      type="text"
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value, collection: selectedCollection })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Price</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      value={newProduct.description}
+                      onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="mt-1 block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-stone-50 file:text-stone-700
+                        hover:file:bg-stone-100"
+                      required
+                    />
+                    {previewUrl && (
+                      <div className="mt-2">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="w-32 h-32 object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-stone-800 text-white px-4 py-2 rounded-md hover:bg-stone-700"
+                  >
+                    Add Product
+                  </button>
+                </form>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products
+                    .filter(product => product.collection._id === selectedCollection)
+                    .map((product) => (
+                      <div key={product._id} className="border rounded-lg overflow-hidden">
+                        <img
+                          src={`${API_URL}${product.image}`}
+                          alt={product.name}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="p-4">
+                          <h4 className="font-medium mb-2">{product.name}</h4>
+                          <p className="text-sm text-gray-600 mb-2">{product.description}</p>
+                          <p className="font-medium">${product.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
