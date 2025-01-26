@@ -18,7 +18,7 @@ const MEETUP_LOCATIONS = [
 ];
 
 // Delivery rate constants
-const BASE_DELIVERY_RATE = 5; // Base rate in QAR
+const BASE_DELIVERY_RATE = 4; // Base rate in QAR
 const RATE_PER_KM = 1; // Additional rate per kilometer in QAR
 const MIN_DELIVERY_CHARGE = 10; // Minimum delivery charge in QAR
 
