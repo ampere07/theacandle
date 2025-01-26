@@ -478,13 +478,6 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="border rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => handleDeleteCollection(collections._id)}
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                      title="Delete collection"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
                     <img
                       src={`${API_URL}${product.image}`}
                       alt={product.name}
