@@ -1,42 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import AddToCartModal from '../components/AddToCartModal';
+import axios from 'axios';
 
-const products = [
-  {
-    id: '1',
-    name: 'Vanilla Dream',
-    price: 24.99,
-    image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400',
-    description: 'A warm and comforting vanilla scent'
-  },
-  {
-    id: '2',
-    name: 'Lavender Mist',
-    price: 29.99,
-    image: 'https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=400',
-    description: 'Calming lavender essence for relaxation'
-  },
-  {
-    id: '3',
-    name: 'Ocean Breeze',
-    price: 27.99,
-    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400',
-    description: 'Fresh marine scent reminiscent of the sea'
-  },
-  {
-    id: '4',
-    name: 'Desert Rose',
-    price: 32.99,
-    image: 'https://images.unsplash.com/photo-1596433809252-901acb55fc63?auto=format&fit=crop&q=80&w=400',
-    description: 'Exotic floral scent inspired by Arabian roses'
-  }
-];
+const API_URL = 'https://theacandle.onrender.com';
 
 const Shop = () => {
   const { addToCart } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/products`);
+        setProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleAddToCart = (product: any) => {
     addToCart({ ...product, quantity: 1 });
@@ -48,10 +33,10 @@ const Shop = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-serif mb-8 text-center">Our Collection</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {products.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+        {products.map((product: any) => (
+          <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden">
             <img
-              src={product.image}
+              src={`${API_URL}${product.image}`}
               alt={product.name}
               className="w-full h-64 object-cover"
             />

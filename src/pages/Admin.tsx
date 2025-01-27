@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, ShoppingBag, LogOut, Plus, X } from 'lucide-react';
+import { Package, ShoppingBag, LogOut, Plus, X, Trash2 } from 'lucide-react';
 
 interface Order {
   _id: string;
@@ -95,51 +95,31 @@ const Admin = () => {
     setLoginData({ username: '', password: '' });
   };
 
-  const handleAddCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/api/collections`, newCollection);
-      setNewCollection({ name: '', description: '' });
-      setIsAddingCollection(false);
-      fetchCollections();
-    } catch (error) {
-      console.error('Error adding collection:', error);
-      alert('Failed to add collection');
+  const handleDeleteProduct = async (productId: string) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await axios.delete(`${API_URL}/api/products/${productId}`);
+        fetchProducts();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Failed to delete product');
+      }
     }
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProduct.image) {
-      alert('Please select an image');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('price', newProduct.price);
-    formData.append('description', newProduct.description);
-    formData.append('collection', newProduct.collection);
-    formData.append('image', newProduct.image);
-
-    try {
-      await axios.post(`${API_URL}/api/products`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setNewProduct({
-        name: '',
-        price: '',
-        description: '',
-        collection: '',
-        image: null
-      });
-      setIsAddingProduct(false);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Failed to add product');
+  const handleDeleteCollection = async (collectionId: string) => {
+    if (window.confirm('Are you sure you want to delete this collection?')) {
+      try {
+        await axios.delete(`${API_URL}/api/collections/${collectionId}`);
+        fetchCollections();
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+        if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert('Failed to delete collection');
+        }
+      }
     }
   };
 
@@ -304,7 +284,18 @@ const Admin = () => {
                         <X className="w-6 h-6" />
                       </button>
                     </div>
-                    <form onSubmit={handleAddCollection} className="space-y-4">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await axios.post(`${API_URL}/api/collections`, newCollection);
+                        setNewCollection({ name: '', description: '' });
+                        setIsAddingCollection(false);
+                        fetchCollections();
+                      } catch (error) {
+                        console.error('Error adding collection:', error);
+                        alert('Failed to add collection');
+                      }
+                    }} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Name</label>
                         <input
@@ -337,8 +328,18 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {collections.map((collection) => (
                   <div key={collection._id} className="border rounded-lg p-4">
-                    <h4 className="font-medium">{collection.name}</h4>
-                    <p className="text-sm text-gray-500">{collection.description}</p>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{collection.name}</h4>
+                        <p className="text-sm text-gray-500">{collection.description}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCollection(collection._id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -366,7 +367,40 @@ const Admin = () => {
                         <X className="w-6 h-6" />
                       </button>
                     </div>
-                    <form onSubmit={handleAddProduct} className="space-y-4">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!newProduct.image) {
+                        alert('Please select an image');
+                        return;
+                      }
+
+                      const formData = new FormData();
+                      formData.append('name', newProduct.name);
+                      formData.append('price', newProduct.price);
+                      formData.append('description', newProduct.description);
+                      formData.append('collection', newProduct.collection);
+                      formData.append('image', newProduct.image);
+
+                      try {
+                        await axios.post(`${API_URL}/api/products`, formData, {
+                          headers: {
+                            'Content-Type': 'multipart/form-data',
+                          },
+                        });
+                        setNewProduct({
+                          name: '',
+                          price: '',
+                          description: '',
+                          collection: '',
+                          image: null
+                        });
+                        setIsAddingProduct(false);
+                        fetchProducts();
+                      } catch (error) {
+                        console.error('Error adding product:', error);
+                        alert('Failed to add product');
+                      }
+                    }} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Name</label>
                         <input
@@ -439,11 +473,19 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div key={product._id} className="border rounded-lg overflow-hidden">
-                    <img
-                      src={`${API_URL}${product.image}`}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative">
+                      <img
+                        src={`${API_URL}${product.image}`}
+                        alt={product.name}
+                        className="w-full h-48 object-cover"
+                      />
+                      <button
+                        onClick={() => handleDeleteProduct(product._id)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-700"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                     <div className="p-4">
                       <h4 className="font-medium">{product.name}</h4>
                       <p className="text-sm text-gray-500">{product.description}</p>
