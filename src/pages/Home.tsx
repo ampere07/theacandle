@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {  Heart, Mail, MapPin, Phone } from 'lucide-react';
-import { Scissors, Leaf, Clock } from 'lucide-react';
-import logo from '../images/logo.jpg';
+import { Flame, Heart, Mail, MapPin, Phone } from 'lucide-react';
 
 const Home = () => {
   return (
@@ -31,17 +29,17 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center p-6">
-            <Scissors className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Handcrafted</h3>
             <p className="text-stone-600">Each candle is carefully handcrafted with attention to detail</p>
           </div>
           <div className="text-center p-6">
-            <Leaf className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Natural Ingredients</h3>
             <p className="text-stone-600">Made with 100% natural soy wax and essential oils</p>
           </div>
           <div className="text-center p-6">
-            <Clock className="w-12 h-12 mx-auto mb-4 text-stone-700" />
+            <Flame className="w-12 h-12 mx-auto mb-4 text-stone-700" />
             <h3 className="text-xl font-medium mb-2">Long-lasting</h3>
             <p className="text-stone-600">Enjoy up to 50 hours of burning time</p>
           </div>
@@ -54,7 +52,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <img
-                src={logo} // Use the imported image here
+                src="https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=800"
                 alt="About Reign Co"
                 className="rounded-lg shadow-lg"
               />
@@ -82,10 +80,11 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-xl font-serif text-white mb-4">Reign Co.</h3>
-              <p className="mb-4">Embrace the glow</p>
+              <p className="mb-4">Illuminate Your Space with Elegance</p>
               <div className="flex items-center space-x-4">
-                <a href="https://www.instagram.com/reigncoqa?igsh=eGU3Y3JybDJvcmgw&utm_source=qr" className="hover:text-white transition-colors">Instagram</a>
-                <a href="https://www.facebook.com/people/Reign-Co/61567747556945/" className="hover:text-white transition-colors">Facebook</a>
+                <a href="#" className="hover:text-white transition-colors">Instagram</a>
+                <a href="#" className="hover:text-white transition-colors">Facebook</a>
+                <a href="#" className="hover:text-white transition-colors">Pinterest</a>
               </div>
             </div>
             <div>
@@ -93,6 +92,7 @@ const Home = () => {
               <ul className="space-y-2">
                 <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
                 <li><Link to="/shop" className="hover:text-white transition-colors">Shop</Link></li>
+                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
               </ul>
             </div>
             <div>
@@ -100,21 +100,21 @@ const Home = () => {
               <ul className="space-y-2">
                 <li className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  khattab bin aal harith, nuaija qatar
+                  123 Candle Street, Metro Manila
                 </li>
                 <li className="flex items-center">
                   <Phone className="w-5 h-5 mr-2" />
-                  +974 5531 1390
+                  +63 123 456 7890
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-2" />
-                  manaorthea@gmail.com
+                  hello@reignco.com
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-stone-700 mt-8 pt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.<br />Designed and maintained by Ampere </p>
+            <p>&copy; {new Date().getFullYear()} Reign Co. All rights reserved.</p>
           </div>
         </div>
       </footer>

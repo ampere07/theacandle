@@ -114,31 +114,20 @@ const Admin = () => {
       alert('Please select an image');
       return;
     }
-  
-    if (!newProduct.collection) {
-      alert('Please select a collection');
-      return;
-    }
-  
+
     const formData = new FormData();
     formData.append('name', newProduct.name);
-    formData.append('price', newProduct.price.toString());
+    formData.append('price', newProduct.price);
     formData.append('description', newProduct.description);
     formData.append('collection', newProduct.collection);
     formData.append('image', newProduct.image);
-  
-    // Log the FormData contents for debugging
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-  
+
     try {
-      const response = await axios.post(`${API_URL}/api/products`, formData, {
+      await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log('Product added successfully:', response.data);
       setNewProduct({
         name: '',
         price: '',
@@ -148,37 +137,9 @@ const Admin = () => {
       });
       setIsAddingProduct(false);
       fetchProducts();
-    } catch (error: any) {
-      console.error('Error adding product:', error.response?.data || error.message);
-      alert(`Failed to add product: ${error.response?.data?.error || error.message}`);
-    }
-  };
-  const handleDeleteCollection = async (collectionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this collection? This will also delete all products in this collection.')) {
-      return;
-    }
-
-    try {
-      await axios.delete(`${API_URL}/api/collections/${collectionId}`);
-      fetchCollections();
-      fetchProducts(); // Refresh products as well since some might have been deleted
     } catch (error) {
-      console.error('Error deleting collection:', error);
-      alert('Failed to delete collection');
-    }
-  };
-
-  const handleDeleteProduct = async (productId: string) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
-
-    try {
-      await axios.delete(`${API_URL}/api/products/${productId}`);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Failed to delete product');
+      console.error('Error adding product:', error);
+      alert('Failed to add product');
     }
   };
 
@@ -223,7 +184,7 @@ const Admin = () => {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-serif">Reign Co. Dashboard</h1>
+            <h1 className="text-2xl font-serif">Admin Dashboard</h1>
             <button
               onClick={handleLogout}
               className="flex items-center text-stone-600 hover:text-stone-900"

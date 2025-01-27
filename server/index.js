@@ -16,6 +16,7 @@ dotenv.config();
 
 const app = express();
 
+// Updated CORS configuration to allow requests from both development and production domains
 app.use(cors({
   origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
@@ -26,6 +27,7 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'server/uploads/');
@@ -38,6 +40,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// Create uploads directory if it doesn't exist
 import fs from 'fs';
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -95,24 +98,6 @@ app.get('/api/products', async (req, res) => {
     const products = await Product.find()
       .populate('collection')
       .sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Add new route to get products by collection ID
-app.get('/api/products/collection/:collectionId', async (req, res) => {
-  try {
-    const { collectionId } = req.params;
-    const products = await Product.find({ collection: collectionId })
-      .populate('collection')
-      .sort({ createdAt: -1 });
-    
-    if (!products.length) {
-      return res.status(404).json({ message: 'No products found for this collection' });
-    }
-    
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });

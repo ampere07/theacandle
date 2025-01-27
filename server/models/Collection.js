@@ -8,7 +8,7 @@ const collectionSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true
+    default: ''
   },
   createdAt: {
     type: Date,
