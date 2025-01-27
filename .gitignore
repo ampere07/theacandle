@@ -1,6 +1,7 @@
 # Logs
 logs/*
 !logs/uploads/
+!logs/uploads/**
 
 # Log files
 *.log
