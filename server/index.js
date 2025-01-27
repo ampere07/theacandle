@@ -44,9 +44,35 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// ... (keep existing routes)
+// GET routes for fetching data
+app.get('/api/collections', async (req, res) => {
+  try {
+    const collections = await Collection.find();
+    res.json(collections);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// Add delete routes for products and collections
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find().populate('collection');
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete routes for products and collections
 app.delete('/api/products/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -85,6 +111,11 @@ app.delete('/api/collections/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
