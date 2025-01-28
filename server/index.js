@@ -101,8 +101,19 @@ app.delete('/api/products/:id', async (req, res) => {
 
     // Delete the image from Cloudinary if it exists
     if (product.image) {
-      const publicId = `products/${product.image.split('/').pop().split('.')[0]}`;
-      await cloudinary.uploader.destroy(publicId);
+      try {
+        // Extract public ID from the Cloudinary URL
+        const publicId = product.image
+          .split('/')
+          .slice(-2) // Get the last two segments (folder and filename)
+          .join('/') // Join them back together
+          .split('.')[0]; // Remove the file extension
+
+        await cloudinary.uploader.destroy(publicId);
+      } catch (cloudinaryError) {
+        console.error('Error deleting image from Cloudinary:', cloudinaryError);
+        // Continue with product deletion even if image deletion fails
+      }
     }
 
     await Product.findByIdAndDelete(req.params.id);
