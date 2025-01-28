@@ -341,7 +341,7 @@ const Admin = () => {
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-stone-800 text-white py-2 px-4 rounded-none hover:bg-stone-700 transition-colors font-light tracking-wider"
+                          className="w-full bg-stone-800 text-white py-2 px-4 rounded-full hover:bg-stone-700 transition-colors font-light tracking-wider"
                         >
                           Add Collection
                         </button>
@@ -491,7 +491,7 @@ const Admin = () => {
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-stone-800 text-white py-2 px-4 rounded-none hover:bg-stone-700 transition-colors font-light tracking-wider"
+                          className="w-full bg-stone-800 text-white py-2 px-4 rounded-full hover:bg-stone-700 transition-colors font-light tracking-wider"
                         >
                           Add Product
                         </button>
