@@ -28,7 +28,7 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <div className="max-w-7xl mx-auto bg-white-100 px-4 py-20">
+      <div className="max-w-7xl mx-auto px-4 py-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="text-center p-6">
             <Scissors className="w-12 h-12 mx-auto mb-4 text-beige-700" />
@@ -49,7 +49,7 @@ const Home = () => {
       </div>
 
       {/* About Section */}
-      <div className="bg-white-100 py-20">
+      <div className="bg-beige-300 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
