@@ -288,7 +288,7 @@ const Admin = () => {
                 <h3 className="text-lg font-serif">Collections</h3>
                 <button
                   onClick={() => setIsAddingCollection(true)}
-                  className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-none hover:bg-stone-700 transition-colors font-light tracking-wider"
+                  className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-full hover:bg-stone-700 transition-colors font-light tracking-wider"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Collection
@@ -376,7 +376,7 @@ const Admin = () => {
                 <h3 className="text-lg font-serif">Products</h3>
                 <button
                   onClick={() => setIsAddingProduct(true)}
-                  className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-none hover:bg-stone-700 transition-colors font-light tracking-wider"
+                  className="flex items-center bg-stone-800 text-white px-4 py-2 rounded-full hover:bg-stone-700 transition-colors font-light tracking-wider"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Product
