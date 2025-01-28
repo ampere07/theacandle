@@ -19,7 +19,7 @@ const Home = () => {
             <p className="text-xl mb-8 font-light tracking-wider">Embrace the glow</p>
             <Link
               to="/shop"
-              className="bg-beige-100 text-stone-800 px-8 py-3 rounded-none hover:bg-beige-200 transition-colors tracking-wider text-sm"
+              className="bg-beige-100 text-stone-800 px-8 py-3 rounded-lg hover:bg-beige-200 transition-colors tracking-wider text-sm"
             >
               Shop Now
             </Link>
