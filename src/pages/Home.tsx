@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Heart, Mail, MapPin, Phone } from 'lucide-react';
+import Logo from '../images/logo.jpg';
+
 
 const Home = () => {
   return (
@@ -52,7 +54,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <img
-                src="https://images.unsplash.com/photo-1602874801007-bd36c376cd5d?auto=format&fit=crop&q=80&w=800"
+                src={Logo}
                 alt="About Reign Co"
                 className="rounded-lg shadow-lg"
               />
