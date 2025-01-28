@@ -3,17 +3,20 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { Order } from './models/Order.js';
 import { Collection } from './models/Collection.js';
 import { Product } from './models/Product.js';
-import fs from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const app = express();
 
@@ -25,20 +28,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'products',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif']
   }
 });
 
@@ -77,18 +73,16 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
     const { name, price, description, collection } = req.body;
     
-    // Create the product with the image path if an image was uploaded
     const product = new Product({
       name,
       price: Number(price),
       description,
       collection,
-      image: req.file ? `/uploads/${req.file.filename}` : null
+      image: req.file ? req.file.path : null // Cloudinary returns the URL in req.file.path
     });
 
     await product.save();
     
-    // Populate the collection field before sending the response
     const populatedProduct = await Product.findById(product._id).populate('collection');
     res.status(201).json(populatedProduct);
   } catch (error) {
@@ -105,12 +99,10 @@ app.delete('/api/products/:id', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Delete the image file if it exists
+    // Delete the image from Cloudinary if it exists
     if (product.image) {
-      const imagePath = path.join(__dirname, product.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
+      const publicId = product.image.split('/').slice(-1)[0].split('.')[0];
+      await cloudinary.uploader.destroy(`products/${publicId}`);
     }
 
     await Product.findByIdAndDelete(req.params.id);
@@ -122,7 +114,6 @@ app.delete('/api/products/:id', async (req, res) => {
 
 app.delete('/api/collections/:id', async (req, res) => {
   try {
-    // Check if collection has products
     const products = await Product.find({ collection: req.params.id });
     if (products.length > 0) {
       return res.status(400).json({ 
