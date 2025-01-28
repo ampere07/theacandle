@@ -72,6 +72,31 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+// Add new POST route for creating products
+app.post('/api/products', upload.single('image'), async (req, res) => {
+  try {
+    const { name, price, description, collection } = req.body;
+    
+    // Create the product with the image path if an image was uploaded
+    const product = new Product({
+      name,
+      price: Number(price),
+      description,
+      collection,
+      image: req.file ? `/uploads/${req.file.filename}` : null
+    });
+
+    await product.save();
+    
+    // Populate the collection field before sending the response
+    const populatedProduct = await Product.findById(product._id).populate('collection');
+    res.status(201).json(populatedProduct);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete routes for products and collections
 app.delete('/api/products/:id', async (req, res) => {
   try {
