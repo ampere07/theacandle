@@ -16,7 +16,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center text-white">
             <h1 className="text-5xl font-serif mb-4">Reign Co.</h1>
-            <p className="text-xl mb-8">Illuminate Your Space with Elegance</p>
+            <p className="text-xl mb-8">Embrace the glow</p>
             <Link
               to="/shop"
               className="bg-stone-800 text-white px-8 py-3 rounded-md hover:bg-stone-700 transition-colors"
