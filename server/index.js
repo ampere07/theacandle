@@ -78,7 +78,7 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
       price: Number(price),
       description,
       collection,
-      image: req.file ? req.file.path : null // Cloudinary returns the URL in req.file.path
+      image: req.file ? req.file.path : null // Cloudinary URL is stored directly
     });
 
     await product.save();
@@ -101,8 +101,8 @@ app.delete('/api/products/:id', async (req, res) => {
 
     // Delete the image from Cloudinary if it exists
     if (product.image) {
-      const publicId = product.image.split('/').slice(-1)[0].split('.')[0];
-      await cloudinary.uploader.destroy(`products/${publicId}`);
+      const publicId = `products/${product.image.split('/').pop().split('.')[0]}`;
+      await cloudinary.uploader.destroy(publicId);
     }
 
     await Product.findByIdAndDelete(req.params.id);

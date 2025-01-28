@@ -45,7 +45,6 @@ const Shop = () => {
   }, []);
 
   const handleAddToCart = (product: Product) => {
-    // Map the product to match CartItem interface
     const cartItem = {
       id: product._id,
       name: product.name,
@@ -107,7 +106,7 @@ const Shop = () => {
           <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative h-64">
               <img
-                src={`${API_URL}${product.image}`}
+                src={product.image} // Use the Cloudinary URL directly
                 alt={product.name}
                 className="w-full h-full object-cover"
               />

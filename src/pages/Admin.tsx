@@ -475,7 +475,7 @@ const Admin = () => {
                   <div key={product._id} className="border rounded-lg overflow-hidden">
                     <div className="relative">
                       <img
-                        src={`${API_URL}${product.image}`}
+                        src={product.image}
                         alt={product.name}
                         className="w-full h-48 object-cover"
                       />
