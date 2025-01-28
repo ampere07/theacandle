@@ -116,17 +116,17 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>QAR{subtotal.toFixed(2)}</span>
           </div>
           {formData.paymentMethod === 'cod' && (
             <div className="flex justify-between">
               <span>Delivery Fee</span>
-              <span>${deliveryFee.toFixed(2)}</span>
+              <span>QAR{deliveryFee.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>QAR{total.toFixed(2)}</span>
           </div>
         </div>
       </div>
