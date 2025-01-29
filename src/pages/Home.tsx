@@ -49,7 +49,7 @@ const Home = () => {
       </div>
 
       {/* About Section */}
-      <div className="bg-beige-150 py-20">
+      <div className="bg-beige-200 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
