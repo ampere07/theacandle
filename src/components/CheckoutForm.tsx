@@ -16,9 +16,53 @@ const MEETUP_LOCATIONS = [
 // Define seller location (example coordinates in Doha)
 const SELLER_LOCATION: [number, number] = [25.2867, 51.5333]; // Doha coordinates
 
+// Define the bounds for Doha
+const DOHA_BOUNDS: LatLngBounds = new LatLngBounds(
+  [25.2307, 51.3967], // Southwest coordinates
+  [25.3875, 51.6267]  // Northeast coordinates
+);
+
 interface CheckoutFormProps {
   onCancel: () => void;
 }
+
+// Map picker component
+const MapPicker: React.FC<{ onLocationSelect: (latlng: LatLng) => void }> = ({ onLocationSelect }) => {
+  const [position, setPosition] = useState<LatLng | null>(null);
+
+  const LocationMarker = () => {
+    const map = useMapEvents({
+      click(e) {
+        setPosition(e.latlng);
+        onLocationSelect(e.latlng);
+      },
+    });
+
+    return position === null ? null : (
+      <>
+        <Marker position={position}>
+        </Marker>
+        <Circle center={position} radius={1000} />
+      </>
+    );
+  };
+
+  return (
+    <MapContainer
+      center={[25.2867, 51.5333]}
+      zoom={12}
+      scrollWheelZoom={false}
+      style={{ height: '300px', width: '100%' }}
+      maxBounds={DOHA_BOUNDS}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <LocationMarker />
+    </MapContainer>
+  );
+};
 
 const calculateDeliveryFee = (distance: number): number => {
   const baseFare = 3.0;
@@ -191,18 +235,28 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         )}
 
         {formData.paymentMethod === 'cod' && (
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              Delivery Address
-            </label>
-            <textarea
-              id="address"
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              rows={3}
-            />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Delivery Location
+              </label>
+              <div className="h-[300px] w-full rounded-lg overflow-hidden border border-gray-300">
+                <MapPicker onLocationSelect={handleLocationChange} />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                Delivery Address
+              </label>
+              <textarea
+                id="address"
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                rows={3}
+              />
+            </div>
           </div>
         )}
       </div>
