@@ -118,7 +118,7 @@ const Shop = () => {
                 <p className="text-sm text-stone-500 mb-6 font-light">{product.description}</p>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="w-full bg-black-100 text-white-800 py-2.5 px-4 rounded-none hover:bg-beige-200 transition-colors font-light tracking-wider"
+                  className="w-full bg-gray-500 text-white py-2.5 px-4 rounded-none hover:bg-black transition-colors font-light tracking-wider"
                 >
                   Add to Cart
                 </button>
