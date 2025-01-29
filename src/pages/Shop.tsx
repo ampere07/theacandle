@@ -113,7 +113,7 @@ const Shop = () => {
                 </div>
               </div>
               <div className="p-6">
-                <h2 className="text-xl font-serif mb-2 text-stone-800">{product.name}</h2>
+                <h2 className="text-xl font-sans-serif mb-2 text-stone-800">{product.name}</h2>
                 <p className="text-stone-600 mb-2 font-light">QAR{product.price}</p>
                 <p className="text-sm text-stone-500 mb-6 font-light">{product.description}</p>
                 <button

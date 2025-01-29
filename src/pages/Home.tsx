@@ -32,17 +32,17 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="text-center p-6">
             <Scissors className="w-12 h-12 mx-auto mb-4 text-beige-700" />
-            <h3 className="text-2xl font-serif mb-3 text-stone-800">Handcrafted</h3>
+            <h3 className="text-2xl font-sans-serif mb-3 text-stone-800">Handcrafted</h3>
             <p className="text-stone-600 font-light">Each candle is carefully handcrafted with attention to detail</p>
           </div>
           <div className="text-center p-6">
             <Leaf className="w-12 h-12 mx-auto mb-4 text-beige-700" />
-            <h3 className="text-2xl font-serif mb-3 text-stone-800">Natural Ingredients</h3>
+            <h3 className="text-2xl font-sans-serif mb-3 text-stone-800">Natural Ingredients</h3>
             <p className="text-stone-600 font-light">Made with 100% natural soy wax and essential oils</p>
           </div>
           <div className="text-center p-6">
             <Clock className="w-12 h-12 mx-auto mb-4 text-beige-700" />
-            <h3 className="text-2xl font-serif mb-3 text-stone-800">Long-lasting</h3>
+            <h3 className="text-2xl font-sans-serif mb-3 text-stone-800">Long-lasting</h3>
             <p className="text-stone-600 font-light">Enjoy up to 50 hours of burning time</p>
           </div>
         </div>
@@ -60,7 +60,7 @@ const Home = () => {
               />
             </div>
             <div>
-              <h2 className="text-4xl font-serif mb-8 text-stone-800">About Reign Co.</h2>
+              <h2 className="text-4xl font-sans-serif mb-8 text-stone-800">About Reign Co.</h2>
               <p className="text-stone-600 mb-6 font-light leading-relaxed">
                 At Reign Co., we believe in creating more than just candles – we craft experiences that transform your space into a sanctuary of warmth and tranquility. Our journey began with a simple passion for artisanal candle making, which has now blossomed into a dedication to bringing luxury and comfort to homes across the country.
               </p>
