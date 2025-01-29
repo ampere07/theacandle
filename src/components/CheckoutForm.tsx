@@ -6,20 +6,25 @@ import { MapContainer, TileLayer, Marker, useMapEvents, Circle } from 'react-lea
 import { LatLng, Icon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// ... (keep existing interfaces and constants)
+// Define the meetup locations
+const MEETUP_LOCATIONS = [
+  { id: 'loc1', name: 'City Center Mall', address: 'West Bay, Doha', coordinates: { lat: 25.3285, lng: 51.5310 } },
+  { id: 'loc2', name: 'Villaggio Mall', address: 'Al Waab Street, Doha', coordinates: { lat: 25.2599, lng: 51.4441 } },
+  { id: 'loc3', name: 'Place Vendome', address: 'Lusail, Doha', coordinates: { lat: 25.4106, lng: 51.4904 } }
+];
+
+// Define seller location (example coordinates in Doha)
+const SELLER_LOCATION: [number, number] = [25.2867, 51.5333]; // Doha coordinates
+
+interface CheckoutFormProps {
+  onCancel: () => void;
+}
 
 const calculateDeliveryFee = (distance: number): number => {
-  // Base fare
   const baseFare = 3.0;
-  
-  // Per kilometer rate
   const perKmRate = 1.5;
-  
-  // Calculate total fare
   const distanceFare = distance * perKmRate;
   const totalFare = baseFare + distanceFare;
-  
-  // Round to 2 decimal places
   return Math.round(totalFare * 100) / 100;
 };
 
@@ -38,7 +43,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const API_URL = 'https://theacandle.onrender.com';
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
@@ -46,7 +51,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distance in km
+    return R * c;
   };
 
   const handleLocationChange = async (latlng: LatLng) => {
@@ -56,7 +61,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       );
       
       if (response.data.display_name) {
-        // Calculate distance from seller location
         const distance = calculateDistance(
           SELLER_LOCATION[0],
           SELLER_LOCATION[1],
@@ -64,7 +68,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           latlng.lng
         );
         
-        // Calculate delivery fee
         const fee = calculateDeliveryFee(distance);
         setDeliveryFee(fee);
 
@@ -110,7 +113,99 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     <form onSubmit={handleSubmit} className="p-4 space-y-4 max-h-[80vh] overflow-y-auto">
       <h2 className="text-xl font-medium mb-4">Checkout</h2>
       
-      {/* ... (keep existing form fields) */}
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            Full Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="contact" className="block text-sm font-medium text-gray-700">
+            Contact Number
+          </label>
+          <input
+            type="tel"
+            id="contact"
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+            value={formData.contact}
+            onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Delivery Method
+          </label>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="cod"
+                checked={formData.paymentMethod === 'cod'}
+                onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                className="mr-2"
+              />
+              Cash on Delivery
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="meetup"
+                checked={formData.paymentMethod === 'meetup'}
+                onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                className="mr-2"
+              />
+              Meetup
+            </label>
+          </div>
+        </div>
+
+        {formData.paymentMethod === 'meetup' && (
+          <div>
+            <label htmlFor="meetupLocation" className="block text-sm font-medium text-gray-700">
+              Meetup Location
+            </label>
+            <select
+              id="meetupLocation"
+              value={formData.meetupLocation}
+              onChange={(e) => setFormData({ ...formData, meetupLocation: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+            >
+              {MEETUP_LOCATIONS.map((location) => (
+                <option key={location.id} value={location.id}>
+                  {location.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {formData.paymentMethod === 'cod' && (
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+              Delivery Address
+            </label>
+            <textarea
+              id="address"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              rows={3}
+            />
+          </div>
+        )}
+      </div>
 
       <div className="border-t pt-4 mt-4">
         <div className="space-y-2">
