@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, signInWithPopup, signOut } from 'firebase/auth';
+import { User, signInWithPopup, signOut, GoogleAuthProvider, browserPopupRedirectResolver } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 
 interface AuthContextType {
@@ -34,9 +34,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      // Use browserPopupRedirectResolver for better compatibility
+      await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      // You might want to show a user-friendly error message here
     }
   };
 
