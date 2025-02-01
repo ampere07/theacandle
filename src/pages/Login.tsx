@@ -14,7 +14,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-stone-50">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Welcome to Thea Candle</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Reign Co.</h2>
           <p className="mt-2 text-sm text-gray-600">Please sign in to continue</p>
         </div>
         <button
