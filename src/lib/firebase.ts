@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCQeeNZsjnKrHN9U38kbXtd96-Tn_7vtkE",
@@ -12,7 +12,25 @@ const firebaseConfig = {
   measurementId: "G-MDHT17L51B"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const googleProvider = new GoogleAuthProvider();
+
+// Initialize Auth with persistence
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Error setting auth persistence:", error);
+});
+
+// Initialize Firestore with persistence
+const db = getFirestore(app);
+enableIndexedDbPersistence(db).catch((error) => {
+  if (error.code === 'failed-precondition') {
+    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+  } else if (error.code === 'unimplemented') {
+    console.warn('The current browser does not support persistence.');
+  }
+});
+
+const googleProvider = new GoogleAuthProvider();
+
+export { auth, db, googleProvider };
