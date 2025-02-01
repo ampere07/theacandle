@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import { MapPin } from 'lucide-react';
@@ -16,6 +16,11 @@ const MEETUP_LOCATIONS = [
   { id: 'robinsons-manila', name: 'Robinsons Place Manila', address: 'Ermita, Manila' },
   { id: 'megamall', name: 'SM Megamall', address: 'Ortigas Center, Mandaluyong City' },
 ];
+
+// Delivery fee constants
+const BASE_FARE = 10; // Base delivery fee in QAR
+const RATE_PER_KM = 2.5; // Additional fee per kilometer in QAR
+const MIN_DELIVERY_FEE = 15; // Minimum delivery fee in QAR
 
 // Fix for the default marker icon
 const defaultIcon = new Icon({
@@ -65,6 +70,25 @@ function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLn
   );
 }
 
+// Function to calculate distance between two points using Haversine formula
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Function to calculate delivery fee
+function calculateDeliveryFee(distance: number): number {
+  const fee = BASE_FARE + (distance * RATE_PER_KM);
+  return Math.max(MIN_DELIVERY_FEE, Math.round(fee * 2) / 2); // Round to nearest 0.5
+}
+
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const { cartItems, clearCart } = useCart();
   const [formData, setFormData] = useState({
@@ -75,8 +99,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
     meetupLocation: MEETUP_LOCATIONS[0].id,
     coordinates: { lat: 0, lng: 0 }
   });
+  const [deliveryFee, setDeliveryFee] = useState(0);
 
   const API_URL = 'https://theacandle.onrender.com';
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = formData.paymentMethod === 'cod' ? subtotal + deliveryFee : subtotal;
 
   const handleLocationChange = async (latlng: LatLng) => {
     try {
@@ -85,6 +113,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       );
       
       if (response.data.display_name) {
+        const distance = calculateDistance(
+          SELLER_LOCATION[0],
+          SELLER_LOCATION[1],
+          latlng.lat,
+          latlng.lng
+        );
+        const fee = calculateDeliveryFee(distance);
+        
+        setDeliveryFee(fee);
         setFormData({
           ...formData,
           address: response.data.display_name,
@@ -105,7 +142,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           ? MEETUP_LOCATIONS.find(loc => loc.id === formData.meetupLocation)?.address 
           : formData.address,
         items: cartItems,
-        total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        deliveryFee: formData.paymentMethod === 'cod' ? deliveryFee : 0,
+        subtotal,
+        total
       };
 
       await axios.post(`${API_URL}/api/orders`, orderData);
@@ -204,6 +243,27 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           <p className="mt-1 text-sm text-gray-500">Click on the map to set your delivery location</p>
         </div>
       )}
+
+      {/* Order Summary */}
+      <div className="mt-6 border-t pt-4">
+        <h3 className="text-lg font-medium mb-2">Order Summary</h3>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>QAR {subtotal.toFixed(2)}</span>
+          </div>
+          {formData.paymentMethod === 'cod' && (
+            <div className="flex justify-between">
+              <span>Delivery Fee:</span>
+              <span>QAR {deliveryFee.toFixed(2)}</span>
+            </div>
+          )}
+          <div className="flex justify-between font-medium text-lg border-t pt-2">
+            <span>Total:</span>
+            <span>QAR {total.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
 
       <div className="flex space-x-4 pt-4">
         <button
