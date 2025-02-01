@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { doc, onSnapshot, setDoc, enableNetwork, disableNetwork } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 
@@ -13,10 +13,10 @@ interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  clearCart: () => void;
+  addToCart: (item: CartItem) => Promise<void>;
+  removeFromCart: (id: string) => Promise<void>;
+  updateQuantity: (id: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -26,8 +26,69 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const [isOffline, setIsOffline] = useState(false);
 
-  // Subscribe to user's cart in Firestore with error handling and retry logic
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      enableNetwork(db).catch(console.error);
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      disableNetwork(db).catch(console.error);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Save cart to Firestore with improved error handling
+  const saveCart = useCallback(async (items: CartItem[]) => {
+    if (!user || isOffline) return;
+
+    const maxRetries = 3;
+    const retryDelay = 1000;
+    let retryCount = 0;
+
+    const attemptSave = async (): Promise<void> => {
+      try {
+        const cartRef = doc(db, 'carts', user.uid);
+        await setDoc(cartRef, {
+          items,
+          updatedAt: new Date(),
+          userId: user.uid,
+        }, { merge: true });
+      } catch (error) {
+        console.error('Error saving cart:', error);
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
+          return attemptSave();
+        }
+        throw error;
+      }
+    };
+
+    try {
+      await attemptSave();
+    } catch (error) {
+      console.error('Final error saving cart:', error);
+      // Handle offline state
+      if (!navigator.onLine) {
+        setIsOffline(true);
+      }
+    }
+  }, [user, isOffline]);
+
+  // Subscribe to user's cart in Firestore
   useEffect(() => {
     if (authLoading) return;
     
@@ -38,147 +99,94 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setIsLoading(true);
+    let unsubscribe: () => void;
 
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000; // 1 second
-
-    const setupFirestoreListener = () => {
-      const cartRef = doc(db, 'carts', user.uid);
-      
+    const setupListener = async () => {
       try {
-        const unsubscribe = onSnapshot(
+        const cartRef = doc(db, 'carts', user.uid);
+        unsubscribe = onSnapshot(
           cartRef,
           {
             next: (doc) => {
               if (doc.exists()) {
-                const data = doc.data();
-                setCartItems(data.items || []);
+                setCartItems(doc.data().items || []);
               } else {
-                // Initialize empty cart document for new users
                 setDoc(cartRef, {
                   items: [],
                   updatedAt: new Date(),
                   userId: user.uid,
-                }).catch(error => {
-                  console.error('Error initializing cart:', error);
-                });
+                }, { merge: true }).catch(console.error);
                 setCartItems([]);
               }
               setIsLoading(false);
-              retryCount = 0; // Reset retry count on successful connection
             },
             error: (error) => {
-              console.error('Firestore error:', error);
+              console.error('Firestore subscription error:', error);
               setIsLoading(false);
-              
-              // Implement retry logic
-              if (retryCount < maxRetries) {
-                retryCount++;
-                console.log(`Retrying connection (${retryCount}/${maxRetries})...`);
-                setTimeout(setupFirestoreListener, retryDelay * retryCount);
-              } else {
-                console.error('Max retries reached. Please check your connection.');
+              if (!navigator.onLine) {
+                setIsOffline(true);
               }
             }
           }
         );
-
-        return unsubscribe;
       } catch (error) {
         console.error('Error setting up Firestore listener:', error);
         setIsLoading(false);
-        return () => {}; // Return empty cleanup function if setup fails
       }
     };
 
-    const unsubscribe = setupFirestoreListener();
-    return () => unsubscribe();
+    setupListener();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user, authLoading]);
 
-  // Save cart to Firestore with retry logic
-  const saveCart = async (items: CartItem[]) => {
-    if (!user) return;
-
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    const attemptSave = async (): Promise<void> => {
-      try {
-        await setDoc(doc(db, 'carts', user.uid), {
-          items,
-          updatedAt: new Date(),
-          userId: user.uid,
-        });
-      } catch (error) {
-        console.error('Error saving cart:', error);
-        
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.log(`Retrying save (${retryCount}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-          return attemptSave();
-        } else {
-          throw new Error('Failed to save cart after multiple attempts');
-        }
-      }
-    };
-
-    try {
-      await attemptSave();
-    } catch (error) {
-      console.error('Final error saving cart:', error);
-    }
-  };
-
-  const addToCart = (item: CartItem) => {
+  const addToCart = async (item: CartItem) => {
     if (!user) return;
     
-    setCartItems(prev => {
-      const existingItem = prev.find(i => i.id === item.id);
-      const newItems = existingItem
-        ? prev.map(i =>
-            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-          )
-        : [...prev, { ...item, quantity: 1 }];
-      
-      saveCart(newItems);
-      return newItems;
-    });
+    const newItems = [...cartItems];
+    const existingItem = newItems.find(i => i.id === item.id);
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      newItems.push({ ...item, quantity: 1 });
+    }
+    
+    setCartItems(newItems);
+    await saveCart(newItems);
   };
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = async (id: string) => {
     if (!user) return;
 
-    setCartItems(prev => {
-      const newItems = prev.filter(item => item.id !== id);
-      saveCart(newItems);
-      return newItems;
-    });
+    const newItems = cartItems.filter(item => item.id !== id);
+    setCartItems(newItems);
+    await saveCart(newItems);
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = async (id: string, quantity: number) => {
     if (!user) return;
 
     if (quantity < 1) {
-      removeFromCart(id);
+      await removeFromCart(id);
       return;
     }
 
-    setCartItems(prev => {
-      const newItems = prev.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      );
-      saveCart(newItems);
-      return newItems;
-    });
+    const newItems = cartItems.map(item =>
+      item.id === id ? { ...item, quantity } : item
+    );
+    setCartItems(newItems);
+    await saveCart(newItems);
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     if (!user) return;
     
     setCartItems([]);
-    saveCart([]);
+    await saveCart([]);
   };
 
   return (

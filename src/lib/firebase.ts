@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCQeeNZsjnKrHN9U38kbXtd96-Tn_7vtkE",
@@ -21,9 +21,15 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("Error setting auth persistence:", error);
 });
 
-// Initialize Firestore with persistence
-const db = getFirestore(app);
-enableIndexedDbPersistence(db).catch((error) => {
+// Initialize Firestore with custom settings
+const db = initializeFirestore(app, {
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED
+});
+
+// Enable offline persistence
+enableIndexedDbPersistence(db, {
+  forceOwnership: true
+}).catch((error) => {
   if (error.code === 'failed-precondition') {
     console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
   } else if (error.code === 'unimplemented') {
