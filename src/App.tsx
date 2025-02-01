@@ -28,29 +28,32 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
-          <div className="min-h-screen bg-stone-50">
-            <Navbar />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/"
-                element={
-                  <PrivateRoute>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <div className="min-h-screen bg-stone-50">
+                    <Navbar />
                     <Home />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/shop"
-                element={
-                  <PrivateRoute>
+                  </div>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/shop"
+              element={
+                <PrivateRoute>
+                  <div className="min-h-screen bg-stone-50">
+                    <Navbar />
                     <Shop />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </div>
+                  </div>
+                </PrivateRoute>
+              }
+            />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
         </Router>
       </CartProvider>
     </AuthProvider>
