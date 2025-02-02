@@ -139,6 +139,139 @@ app.delete('/api/collections/:id', async (req, res) => {
   }
 });
 
+app.get('/api/cart/:userEmail', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    const cart = await Cart.findOne({ userEmail })
+      .populate({
+        path: 'items.productId',
+        model: 'Product',
+        select: 'name price image'
+      });
+    
+    if (!cart) {
+      return res.json({ items: [] });
+    }
+
+    const formattedItems = cart.items.map(item => ({
+      id: item.productId._id,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      quantity: item.quantity
+    }));
+
+    res.json({ items: formattedItems });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/cart/:userEmail/add', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    const { productId, quantity = 1 } = req.body;
+
+    let cart = await Cart.findOne({ userEmail });
+    
+    if (!cart) {
+      cart = new Cart({ userEmail, items: [] });
+    }
+
+    const existingItem = cart.items.find(item => 
+      item.productId.toString() === productId
+    );
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      cart.items.push({ productId, quantity });
+    }
+
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    const updatedCart = await Cart.findById(cart._id).populate({
+      path: 'items.productId',
+      model: 'Product',
+      select: 'name price image'
+    });
+
+    const formattedItems = updatedCart.items.map(item => ({
+      id: item.productId._id,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      quantity: item.quantity
+    }));
+
+    res.json({ items: formattedItems });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/cart/:userEmail/update', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    const { productId, quantity } = req.body;
+
+    const cart = await Cart.findOne({ userEmail });
+    
+    if (!cart) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+
+    if (quantity < 1) {
+      cart.items = cart.items.filter(item => 
+        item.productId.toString() !== productId
+      );
+    } else {
+      const item = cart.items.find(item => 
+        item.productId.toString() === productId
+      );
+      if (item) {
+        item.quantity = quantity;
+      }
+    }
+
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    const updatedCart = await Cart.findById(cart._id).populate({
+      path: 'items.productId',
+      model: 'Product',
+      select: 'name price image'
+    });
+
+    const formattedItems = updatedCart.items.map(item => ({
+      id: item.productId._id,
+      name: item.productId.name,
+      price: item.productId.price,
+      image: item.productId.image,
+      quantity: item.quantity
+    }));
+
+    res.json({ items: formattedItems });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/cart/:userEmail/clear', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    await Cart.findOneAndUpdate(
+      { userEmail },
+      { $set: { items: [], updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ items: [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
