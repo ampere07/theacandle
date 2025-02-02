@@ -15,7 +15,8 @@ const CartSchema = new mongoose.Schema({
     quantity: {
       type: Number,
       required: true,
-      min: 1
+      min: 1,
+      default: 1
     }
   }],
   updatedAt: {
@@ -23,5 +24,8 @@ const CartSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Add index for better query performance
+CartSchema.index({ userEmail: 1 });
 
 export const Cart = mongoose.model('Cart', CartSchema);

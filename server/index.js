@@ -21,7 +21,7 @@ cloudinary.config({
 const app = express();
 
 app.use(cors({
-  origin: '*', // Allow all origins in development
+  origin: ['https://reignco.vercel.app', 'http://localhost:5173'], // Add your frontend URLs
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext'; // Add this import
+import { useAuth } from '../context/AuthContext';
 import AddToCartModal from '../components/AddToCartModal';
 import axios from 'axios';
 
 const API_URL = 'https://theacandle.onrender.com';
+
+// Configure axios defaults
+axios.defaults.withCredentials = true;
 
 interface Collection {
   _id: string;
@@ -23,7 +26,7 @@ interface Product {
 
 const Shop = () => {
   const { addToCart } = useCart();
-  const { user } = useAuth(); // Add this line
+  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,13 +38,17 @@ const Shop = () => {
     const fetchData = async () => {
       try {
         const [productsRes, collectionsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`),
-          axios.get(`${API_URL}/api/collections`)
+          axios.get(`${API_URL}/api/products`, { withCredentials: true }),
+          axios.get(`${API_URL}/api/collections`, { withCredentials: true })
         ]);
         setProducts(productsRes.data);
         setCollections(collectionsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Add better error handling
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+          console.error('CORS error - check server configuration');
+        }
       }
     };
     fetchData();
