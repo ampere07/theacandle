@@ -23,21 +23,34 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   // Subscribe to user's cart in Firestore
   useEffect(() => {
+    if (loading) return; // Wait for auth to initialize
     if (!user) {
       setCartItems([]);
       return;
     }
 
+    // Get initial cart data
+    const cartRef = doc(db, 'carts', user.uid);
+    
     const unsubscribe = onSnapshot(
-      doc(db, 'carts', user.uid),
+      cartRef,
       (doc) => {
         if (doc.exists()) {
-          setCartItems(doc.data().items || []);
+          const data = doc.data();
+          setCartItems(data.items || []);
         } else {
+          // Initialize empty cart document for new users
+          setDoc(cartRef, {
+            items: [],
+            updatedAt: new Date(),
+            userId: user.uid,
+          }).catch(error => {
+            console.error('Error initializing cart:', error);
+          });
           setCartItems([]);
         }
       },
@@ -47,7 +60,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, loading]);
 
   // Save cart to Firestore
   const saveCart = async (items: CartItem[]) => {
@@ -65,6 +78,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addToCart = (item: CartItem) => {
+    if (!user) return; // Prevent adding items when not logged in
+    
     setCartItems(prev => {
       const existingItem = prev.find(i => i.id === item.id);
       const newItems = existingItem
@@ -79,6 +94,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (id: string) => {
+    if (!user) return;
+
     setCartItems(prev => {
       const newItems = prev.filter(item => item.id !== id);
       saveCart(newItems);
@@ -87,6 +104,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateQuantity = (id: string, quantity: number) => {
+    if (!user) return;
+
     if (quantity < 1) {
       removeFromCart(id);
       return;
@@ -102,10 +121,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearCart = () => {
+    if (!user) return;
+    
     setCartItems([]);
-    if (user) {
-      saveCart([]);
-    }
+    saveCart([]);
   };
 
   return (
