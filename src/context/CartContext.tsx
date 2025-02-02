@@ -17,21 +17,27 @@ interface CartContextType {
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  isLoading: boolean; // Add loading state
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const { user, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const { user, loading: authLoading } = useAuth();
 
   // Subscribe to user's cart in Firestore
   useEffect(() => {
-    if (loading) return; // Wait for auth to initialize
+    if (authLoading) return; // Wait for auth to initialize
+    
     if (!user) {
       setCartItems([]);
+      setIsLoading(false); // Set loading to false when no user
       return;
     }
+
+    setIsLoading(true); // Set loading to true when starting to fetch
 
     // Get initial cart data
     const cartRef = doc(db, 'carts', user.uid);
@@ -53,14 +59,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           setCartItems([]);
         }
+        setIsLoading(false); // Set loading to false after data is fetched
       },
       (error) => {
         console.error('Error fetching cart:', error);
+        setIsLoading(false); // Set loading to false on error
       }
     );
 
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, authLoading]);
 
   // Save cart to Firestore
   const saveCart = async (items: CartItem[]) => {
@@ -129,7 +137,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{ 
+        cartItems, 
+        addToCart, 
+        removeFromCart, 
+        updateQuantity, 
+        clearCart,
+        isLoading // Expose loading state
+      }}
     >
       {children}
     </CartContext.Provider>
