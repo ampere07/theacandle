@@ -33,22 +33,20 @@ const Shop = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsRes, collectionsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`, { withCredentials: true }),
-          axios.get(`${API_URL}/api/collections`, { withCredentials: true })
+          axios.get(`${API_URL}/api/products`),
+          axios.get(`${API_URL}/api/collections`)
         ]);
         setProducts(productsRes.data);
         setCollections(collectionsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Add better error handling
-        if (axios.isAxiosError(error) && error.response?.status === 403) {
-          console.error('CORS error - check server configuration');
-        }
+        setError('Failed to load products. Please try again later.');
       }
     };
     fetchData();
@@ -56,13 +54,14 @@ const Shop = () => {
 
   const handleAddToCart = async (product: Product) => {
     if (!user?.email) {
-      // Handle not logged in state - you might want to show a login prompt
-      alert('Please log in to add items to cart');
+      setError('Please log in to add items to cart');
       return;
     }
 
     try {
       setIsAddingToCart(true);
+      setError(null);
+      
       const cartItem = {
         id: product._id,
         name: product.name,
@@ -76,7 +75,7 @@ const Shop = () => {
       setModalOpen(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
+      setError('Failed to add item to cart. Please try again.');
     } finally {
       setIsAddingToCart(false);
     }
@@ -89,6 +88,12 @@ const Shop = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-4xl font-serif mb-12 text-center text-stone-800">Our Collection</h1>
+      
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
       
       {/* Collection Filter */}
       <div className="mb-12 flex justify-center">

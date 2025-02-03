@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
+const API_URL = 'https://theacandle.onrender.com';
+
 interface CartItem {
   id: string;
   name: string;
@@ -33,11 +35,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const response = await fetch(`/api/cart/${encodeURIComponent(user.email)}`);
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      setCartItems(data.items);
+      setCartItems(data.items || []);
     } catch (error) {
       console.error('Error fetching cart:', error);
+      setCartItems([]);
     } finally {
       setIsLoading(false);
     }
@@ -51,15 +57,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user?.email) return;
     
     try {
-      const response = await fetch(`/api/cart/${encodeURIComponent(user.email)}/add`, {
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({ productId: item.id, quantity: 1 })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setCartItems(data.items);
+      setCartItems(data.items || []);
     } catch (error) {
       console.error('Error adding to cart:', error);
+      throw error;
     }
   };
 
@@ -67,15 +83,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`/api/cart/${encodeURIComponent(user.email)}/update`, {
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/update`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({ productId: id, quantity })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setCartItems(data.items);
+      setCartItems(data.items || []);
     } catch (error) {
       console.error('Error updating cart:', error);
+      throw error;
     }
   };
 
@@ -87,13 +113,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`/api/cart/${encodeURIComponent(user.email)}/clear`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/clear`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setCartItems(data.items);
+      setCartItems(data.items || []);
     } catch (error) {
       console.error('Error clearing cart:', error);
+      throw error;
     }
   };
 

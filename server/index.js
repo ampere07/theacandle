@@ -8,6 +8,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { Order } from './models/Order.js';
 import { Collection } from './models/Collection.js';
 import { Product } from './models/Product.js';
+import { Cart } from './models/Cart.js';
 
 dotenv.config();
 
