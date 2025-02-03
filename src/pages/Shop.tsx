@@ -2,17 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import AddToCartModal from '../components/AddToCartModal';
+import ProductDetail from '../components/ProductDetail';
 import axios from 'axios';
 
 const API_URL = 'https://theacandle.onrender.com';
-
-// Configure axios defaults
-axios.defaults.withCredentials = true;
 
 interface Collection {
   _id: string;
   name: string;
   description: string;
+}
+
+interface Review {
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 interface Product {
@@ -21,14 +27,17 @@ interface Product {
   price: number;
   description: string;
   image: string;
+  additionalImages: string[];
   collection: Collection;
+  rating: number;
+  reviews: Review[];
 }
 
 const Shop = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
@@ -71,13 +80,41 @@ const Shop = () => {
       };
       
       await addToCart(cartItem);
-      setSelectedProduct(product.name);
       setModalOpen(true);
+      setSelectedProduct(null);
     } catch (error) {
       console.error('Error adding to cart:', error);
       setError('Failed to add item to cart. Please try again.');
     } finally {
       setIsAddingToCart(false);
+    }
+  };
+
+  const handleAddReview = async (productId: string, rating: number, comment: string) => {
+    if (!user) {
+      setError('Please log in to add a review');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API_URL}/api/products/${productId}/reviews`, {
+        rating,
+        comment,
+        userId: user.email,
+        userName: user.email.split('@')[0]
+      });
+
+      const updatedProducts = products.map(p => 
+        p._id === productId ? response.data : p
+      );
+      setProducts(updatedProducts);
+      
+      if (selectedProduct?._id === productId) {
+        setSelectedProduct(response.data);
+      }
+    } catch (error) {
+      console.error('Error adding review:', error);
+      throw error;
     }
   };
 
@@ -88,14 +125,13 @@ const Shop = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-4xl font-serif mb-12 text-center text-stone-800">Our Collection</h1>
-      
+
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
           {error}
         </div>
       )}
       
-      {/* Collection Filter */}
       <div className="mb-12 flex justify-center">
         <div className="inline-flex rounded-none shadow-sm" role="group">
           <button
@@ -125,10 +161,13 @@ const Shop = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {filteredProducts.map((product) => (
-          <div key={product._id} className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+          <div
+            key={product._id}
+            onClick={() => setSelectedProduct(product)}
+            className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+          >
             <div className="relative h-64">
               <img
                 src={product.image}
@@ -145,30 +184,24 @@ const Shop = () => {
               <h2 className="text-xl font-sans-serif mb-2 text-stone-800">{product.name}</h2>
               <p className="text-stone-600 mb-2 font-light">QAR{product.price}</p>
               <p className="text-sm text-stone-500 mb-6 font-light">{product.description}</p>
-              <button
-                onClick={() => handleAddToCart(product)}
-                disabled={isAddingToCart}
-                className={`w-full bg-black text-white py-2.5 px-4 rounded-none hover:bg-gray-500 transition-colors font-light tracking-wider ${
-                  isAddingToCart ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-stone-500 font-light">No products found in this collection.</p>
-        </div>
+      {selectedProduct && (
+        <ProductDetail
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleAddToCart}
+          onAddReview={handleAddReview}
+        />
       )}
 
       <AddToCartModal 
         isOpen={modalOpen} 
         onClose={() => setModalOpen(false)} 
-        productName={selectedProduct}
+        productName={selectedProduct?.name || ''}
       />
     </div>
   );

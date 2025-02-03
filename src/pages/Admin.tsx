@@ -23,6 +23,7 @@ interface Product {
   name: string;
   price: number;
   image: string;
+  additionalImages: string[];
   description: string;
   collection: Collection;
 }
@@ -43,7 +44,8 @@ const Admin = () => {
     price: '',
     description: '',
     collection: '',
-    image: null as File | null
+    image: null as File | null,
+    additionalImages: [] as File[]
   });
 
   const API_URL = 'https://theacandle.onrender.com';
@@ -198,8 +200,8 @@ const Admin = () => {
           <button
             onClick={() => setActiveTab('orders')}
             className={`flex items-center px-4 py-2 rounded-none font-light tracking-wider ${
-              activeTab === 'orders' 
-                ? 'bg-stone-800 text-white' 
+              activeTab === 'orders'
+                ? 'bg-stone-800 text-white'
                 : 'bg-white text-stone-800 hover:bg-stone-100'
             }`}
           >
@@ -209,8 +211,8 @@ const Admin = () => {
           <button
             onClick={() => setActiveTab('products')}
             className={`flex items-center px-4 py-2 rounded-none font-light tracking-wider ${
-              activeTab === 'products' 
-                ? 'bg-stone-800 text-white' 
+              activeTab === 'products'
+                ? 'bg-stone-800 text-white'
                 : 'bg-white text-stone-800 hover:bg-stone-100'
             }`}
           >
@@ -302,40 +304,49 @@ const Admin = () => {
                     <div className="relative bg-white rounded-none p-6 max-w-md w-full">
                       <div className="flex justify-between items-center mb-4">
                         <h4 className="text-lg font-serif">Add New Collection</h4>
-                        <button 
+                        <button
                           onClick={() => setIsAddingCollection(false)}
                           className="text-stone-400 hover:text-stone-500 transition-colors"
                         >
                           <X className="w-6 h-6" />
                         </button>
                       </div>
-                      <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        try {
-                          await axios.post(`${API_URL}/api/collections`, newCollection);
-                          setNewCollection({ name: '', description: '' });
-                          setIsAddingCollection(false);
-                          fetchCollections();
-                        } catch (error) {
-                          console.error('Error adding collection:', error);
-                          alert('Failed to add collection');
-                        }
-                      }} className="space-y-4">
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          try {
+                            await axios.post(`${API_URL}/api/collections`, newCollection);
+                            setNewCollection({ name: '', description: '' });
+                            setIsAddingCollection(false);
+                            fetchCollections();
+                          } catch (error) {
+                            console.error('Error adding collection:', error);
+                            alert('Failed to add collection');
+                          }
+                        }}
+                        className="space-y-4"
+                      >
                         <div>
                           <label className="block text-sm font-light text-stone-700">Name</label>
                           <input
                             type="text"
                             required
                             value={newCollection.name}
-                            onChange={(e) => setNewCollection({ ...newCollection, name: e.target.value })}
+                            onChange={(e) =>
+                              setNewCollection({ ...newCollection, name: e.target.value })
+                            }
                             className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Description</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Description
+                          </label>
                           <textarea
                             value={newCollection.description}
-                            onChange={(e) => setNewCollection({ ...newCollection, description: e.target.value })}
+                            onChange={(e) =>
+                              setNewCollection({ ...newCollection, description: e.target.value })
+                            }
                             className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
                           />
                         </div>
@@ -357,7 +368,9 @@ const Admin = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-serif">{collection.name}</h4>
-                        <p className="text-sm text-stone-500 font-light">{collection.description}</p>
+                        <p className="text-sm text-stone-500 font-light">
+                          {collection.description}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleDeleteCollection(collection._id)}
@@ -390,82 +403,110 @@ const Admin = () => {
                     <div className="relative bg-white rounded-none p-6 max-w-md w-full">
                       <div className="flex justify-between items-center mb-4">
                         <h4 className="text-lg font-serif">Add New Product</h4>
-                        <button 
+                        <button
                           onClick={() => setIsAddingProduct(false)}
                           className="text-stone-400 hover:text-stone-500 transition-colors"
                         >
                           <X className="w-6 h-6" />
                         </button>
                       </div>
-                      <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (!newProduct.image) {
-                          alert('Please select an image');
-                          return;
-                        }
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!newProduct.image) {
+                            alert('Please select a main product image');
+                            return;
+                          }
 
-                        const formData = new FormData();
-                        formData.append('name', newProduct.name);
-                        formData.append('price', newProduct.price);
-                        formData.append('description', newProduct.description);
-                        formData.append('collection', newProduct.collection);
-                        formData.append('image', newProduct.image);
+                          const formData = new FormData();
+                          formData.append('name', newProduct.name);
+                          formData.append('price', newProduct.price);
+                          formData.append('description', newProduct.description);
+                          formData.append('collection', newProduct.collection);
+                          formData.append('image', newProduct.image);
 
-                        try {
-                          await axios.post(`${API_URL}/api/products`, formData, {
-                            headers: {
-                              'Content-Type': 'multipart/form-data',
-                            },
+                          newProduct.additionalImages.forEach((image) => {
+                            formData.append('additionalImages', image);
                           });
-                          setNewProduct({
-                            name: '',
-                            price: '',
-                            description: '',
-                            collection: '',
-                            image: null
-                          });
-                          setIsAddingProduct(false);
-                          fetchProducts();
-                        } catch (error) {
-                          console.error('Error adding product:', error);
-                          alert('Failed to add product');
-                        }
-                      }} className="space-y-4">
+
+                          try {
+                            await axios.post(`${API_URL}/api/products`, formData, {
+                              headers: {
+                                'Content-Type': 'multipart/form-data'
+                              }
+                            });
+                            setNewProduct({
+                              name: '',
+                              price: '',
+                              description: '',
+                              collection: '',
+                              image: null,
+                              additionalImages: []
+                            });
+                            setIsAddingProduct(false);
+                            fetchProducts();
+                          } catch (error) {
+                            console.error('Error adding product:', error);
+                            alert('Failed to add product');
+                          }
+                        }}
+                        className="space-y-4"
+                      >
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Name</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Product Name
+                          </label>
                           <input
                             type="text"
                             required
                             value={newProduct.name}
-                            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, name: e.target.value })
+                            }
                             className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                            placeholder="Enter product name"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Price</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Price (QAR)
+                          </label>
                           <input
                             type="number"
                             required
                             step="0.01"
                             value={newProduct.price}
-                            onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, price: e.target.value })
+                            }
                             className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                            placeholder="0.00"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Description</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Description
+                          </label>
                           <textarea
+                            required
                             value={newProduct.description}
-                            onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                            className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, description: e.target.value })
+                            }
+                            className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 h-32"
+                            placeholder="Enter product description"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Collection</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Collection
+                          </label>
                           <select
                             required
                             value={newProduct.collection}
-                            onChange={(e) => setNewProduct({ ...newProduct, collection: e.target.value })}
+                            onChange={(e) =>
+                              setNewProduct({ ...newProduct, collection: e.target.value })
+                            }
                             className="mt-1 block w-full rounded-none border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500"
                           >
                             <option value="">Select a collection</option>
@@ -477,7 +518,9 @@ const Admin = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-light text-stone-700">Image</label>
+                          <label className="block text-sm font-light text-stone-700">
+                            Main Product Image
+                          </label>
                           <input
                             type="file"
                             required
@@ -488,6 +531,42 @@ const Admin = () => {
                             }}
                             className="mt-1 block w-full font-light"
                           />
+                          {newProduct.image && (
+                            <div className="mt-2">
+                              <img
+                                src={URL.createObjectURL(newProduct.image)}
+                                alt="Product preview"
+                                className="h-32 w-32 object-cover rounded-none border"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-light text-stone-700">
+                            Additional Images (Sliding Gallery)
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setNewProduct({ ...newProduct, additionalImages: files });
+                            }}
+                            className="mt-1 block w-full font-light"
+                          />
+                          {newProduct.additionalImages.length > 0 && (
+                            <div className="mt-2 flex gap-2 overflow-x-auto">
+                              {newProduct.additionalImages.map((image, index) => (
+                                <img
+                                  key={index}
+                                  src={URL.createObjectURL(image)}
+                                  alt={`Additional image ${index + 1}`}
+                                  className="h-24 w-24 object-cover rounded-none border"
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <button
                           type="submit"

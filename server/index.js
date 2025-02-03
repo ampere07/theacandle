@@ -12,7 +12,6 @@ import { Cart } from './models/Cart.js';
 
 dotenv.config();
 
-// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -22,7 +21,7 @@ cloudinary.config({
 const app = express();
 
 app.use(cors({
-  origin: ['https://reignco.vercel.app', 'http://localhost:5173'], // Add your frontend URLs
+  origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
@@ -30,18 +29,17 @@ app.use(cors({
 
 app.use(express.json());
 
-// Configure Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'products',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif']
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
   }
 });
 
 const upload = multer({ storage: storage });
 
-// GET routes for fetching data
 app.get('/api/collections', async (req, res) => {
   try {
     const collections = await Collection.find();
@@ -69,21 +67,31 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// Add new POST route for creating products
-app.post('/api/products', upload.single('image'), async (req, res) => {
+app.post('/api/products', upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'additionalImages', maxCount: 5 }
+]), async (req, res) => {
   try {
     const { name, price, description, collection } = req.body;
-    
+
+    const mainImage = req.files['image']?.[0]?.path;
+    const additionalImages = req.files['additionalImages']?.map(file => file.path) || [];
+
+    if (!mainImage) {
+      return res.status(400).json({ error: 'Main image is required' });
+    }
+
     const product = new Product({
       name,
       price: Number(price),
       description,
       collection,
-      image: req.file ? req.file.path : null // Cloudinary URL is stored directly
+      image: mainImage,
+      additionalImages
     });
 
     await product.save();
-    
+
     const populatedProduct = await Product.findById(product._id).populate('collection');
     res.status(201).json(populatedProduct);
   } catch (error) {
@@ -92,7 +100,6 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
   }
 });
 
-// Delete routes for products and collections
 app.delete('/api/products/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -100,20 +107,29 @@ app.delete('/api/products/:id', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Delete the image from Cloudinary if it exists
     if (product.image) {
       try {
-        // Extract public ID from the Cloudinary URL
         const publicId = product.image
           .split('/')
-          .slice(-2) // Get the last two segments (folder and filename)
-          .join('/') // Join them back together
-          .split('.')[0]; // Remove the file extension
-
+          .slice(-2)
+          .join('/')
+          .split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       } catch (cloudinaryError) {
-        console.error('Error deleting image from Cloudinary:', cloudinaryError);
-        // Continue with product deletion even if image deletion fails
+        console.error('Error deleting main image from Cloudinary:', cloudinaryError);
+      }
+    }
+
+    for (const imageUrl of product.additionalImages) {
+      try {
+        const publicId = imageUrl
+          .split('/')
+          .slice(-2)
+          .join('/')
+          .split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (cloudinaryError) {
+        console.error('Error deleting additional image from Cloudinary:', cloudinaryError);
       }
     }
 
@@ -128,8 +144,8 @@ app.delete('/api/collections/:id', async (req, res) => {
   try {
     const products = await Product.find({ collection: req.params.id });
     if (products.length > 0) {
-      return res.status(400).json({ 
-        error: 'Cannot delete collection with existing products. Please delete or move the products first.' 
+      return res.status(400).json({
+        error: 'Cannot delete collection with existing products. Please delete or move the products first.'
       });
     }
 
@@ -149,7 +165,7 @@ app.get('/api/cart/:userEmail', async (req, res) => {
         model: 'Product',
         select: 'name price image'
       });
-    
+
     if (!cart) {
       return res.json({ items: [] });
     }
@@ -174,12 +190,12 @@ app.post('/api/cart/:userEmail/add', async (req, res) => {
     const { productId, quantity = 1 } = req.body;
 
     let cart = await Cart.findOne({ userEmail });
-    
+
     if (!cart) {
       cart = new Cart({ userEmail, items: [] });
     }
 
-    const existingItem = cart.items.find(item => 
+    const existingItem = cart.items.find(item =>
       item.productId.toString() === productId
     );
 
@@ -218,17 +234,17 @@ app.post('/api/cart/:userEmail/update', async (req, res) => {
     const { productId, quantity } = req.body;
 
     const cart = await Cart.findOne({ userEmail });
-    
+
     if (!cart) {
       return res.status(404).json({ error: 'Cart not found' });
     }
 
     if (quantity < 1) {
-      cart.items = cart.items.filter(item => 
+      cart.items = cart.items.filter(item =>
         item.productId.toString() !== productId
       );
     } else {
-      const item = cart.items.find(item => 
+      const item = cart.items.find(item =>
         item.productId.toString() === productId
       );
       if (item) {
@@ -273,7 +289,6 @@ app.delete('/api/cart/:userEmail/clear', async (req, res) => {
   }
 });
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
