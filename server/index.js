@@ -20,24 +20,13 @@ cloudinary.config({
 
 const app = express();
 
-const corsOptions = {
-  origin: function(origin, callback) {
-    const allowedOrigins = ['https://reignco.vercel.app', 'http://localhost:5173'];
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+app.use(cors({
+  origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
-};
+}));
 
-app.use(cors(corsOptions));
-
-// Add preflight handling for all routes
-app.options('*', cors(corsOptions));
 app.use(express.json());
 
 const storage = new CloudinaryStorage({

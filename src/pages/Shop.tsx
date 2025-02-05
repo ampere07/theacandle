@@ -8,6 +8,10 @@ import axios from 'axios';
 
 const API_URL = 'https://theacandle.onrender.com';
 
+// Configure axios defaults
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Accept'] = 'application/json';
+
 interface Collection {
   _id: string;
   name: string;
@@ -44,19 +48,36 @@ const Shop = () => {
   const [selectedCollection, setSelectedCollection] = useState<string>('all');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+
         const [productsRes, collectionsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`),
-          axios.get(`${API_URL}/api/collections`)
+          axios.get(`${API_URL}/api/products`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Origin': window.location.origin
+            }
+          }),
+          axios.get(`${API_URL}/api/collections`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Origin': window.location.origin
+            }
+          })
         ]);
+
         setProducts(productsRes.data);
         setCollections(collectionsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to load products. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -98,12 +119,21 @@ const Shop = () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/products/${productId}/reviews`, {
-        rating,
-        comment,
-        userId: user.email,
-        userName: user.email.split('@')[0]
-      });
+      const response = await axios.post(
+        `${API_URL}/api/products/${productId}/reviews`,
+        {
+          rating,
+          comment,
+          userId: user.email,
+          userName: user.email.split('@')[0]
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Origin': window.location.origin
+          }
+        }
+      );
 
       const updatedProducts = products.map(p =>
         p._id === productId ? response.data : p
@@ -160,77 +190,85 @@ const Shop = () => {
         </div>
       )}
 
-      <div className="mb-12 flex justify-center">
-        <div className="inline-flex rounded-none shadow-sm" role="group">
-          <button
-            key="all"
-            onClick={() => setSelectedCollection('all')}
-            className={`px-6 py-2.5 text-sm font-light tracking-wider border ${
-              selectedCollection === 'all'
-                ? 'bg-stone-800 text-beige-50 border-stone-800'
-                : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
-            }`}
-          >
-            All Collections
-          </button>
-          {collections.map((collection) => (
-            <button
-              key={collection._id}
-              onClick={() => setSelectedCollection(collection._id)}
-              className={`px-6 py-2.5 text-sm font-light tracking-wider border-t border-b border-r ${
-                selectedCollection === collection._id
-                  ? 'bg-stone-800 text-beige-50 border-stone-800'
-                  : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
-              }`}
-            >
-              {collection.name}
-            </button>
-          ))}
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {filteredProducts.map((product) => (
-          <div
-            key={product._id}
-            onClick={() => setSelectedProduct(product)}
-            className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-          >
-            <div className="relative h-64">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 right-3">
-                <span className="bg-stone-800 text-beige-50 text-xs px-3 py-1.5 font-light tracking-wider">
-                  {product.collection?.name}
-                </span>
-              </div>
-            </div>
-            <div className="p-6">
-              <h2 className="text-xl font-sans-serif mb-2 text-stone-800">{product.name}</h2>
-              <p className="text-stone-600 mb-2 font-light">QAR{product.price}</p>
-              <div className="flex items-center gap-1.5 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-4 h-4 ${
-                      product.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-                <span className="text-sm text-stone-500 ml-1 font-light">
-                  {product.rating > 0
-                    ? `${product.rating.toFixed(1)} (${product.reviews?.length || 0})`
-                    : 'No reviews yet'}
-                </span>
-              </div>
-              <p className="text-sm text-stone-500 mb-6 font-light line-clamp-2">{product.description}</p>
+      ) : (
+        <>
+          <div className="mb-12 flex justify-center">
+            <div className="inline-flex rounded-none shadow-sm" role="group">
+              <button
+                key="all"
+                onClick={() => setSelectedCollection('all')}
+                className={`px-6 py-2.5 text-sm font-light tracking-wider border ${
+                  selectedCollection === 'all'
+                    ? 'bg-stone-800 text-beige-50 border-stone-800'
+                    : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
+                }`}
+              >
+                All Collections
+              </button>
+              {collections.map((collection) => (
+                <button
+                  key={collection._id}
+                  onClick={() => setSelectedCollection(collection._id)}
+                  className={`px-6 py-2.5 text-sm font-light tracking-wider border-t border-b border-r ${
+                    selectedCollection === collection._id
+                      ? 'bg-stone-800 text-beige-50 border-stone-800'
+                      : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
+                  }`}
+                >
+                  {collection.name}
+                </button>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => (
+              <div
+                key={product._id}
+                onClick={() => setSelectedProduct(product)}
+                className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+              >
+                <div className="relative h-64">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-stone-800 text-beige-50 text-xs px-3 py-1.5 font-light tracking-wider">
+                      {product.collection?.name}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h2 className="text-xl font-sans-serif mb-2 text-stone-800">{product.name}</h2>
+                  <p className="text-stone-600 mb-2 font-light">QAR{product.price}</p>
+                  <div className="flex items-center gap-1.5 mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          product.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                    <span className="text-sm text-stone-500 ml-1 font-light">
+                      {product.rating > 0
+                        ? `${product.rating.toFixed(1)} (${product.reviews?.length || 0})`
+                        : 'No reviews yet'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-stone-500 mb-6 font-light line-clamp-2">{product.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
