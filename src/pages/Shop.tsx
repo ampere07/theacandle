@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Star } from 'lucide-react';
+import { Star, ArrowLeft } from 'lucide-react';
 import AddToCartModal from '../components/AddToCartModal';
 import ProductDetail from '../components/ProductDetail';
 import axios from 'axios';
@@ -123,6 +123,33 @@ const Shop = () => {
     ? products
     : products.filter(product => product.collection?._id === selectedCollection);
 
+  if (selectedProduct) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <button
+          onClick={() => setSelectedProduct(null)}
+          className="flex items-center text-stone-600 hover:text-stone-900 mb-8 group"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2 transition-transform group-hover:-translate-x-1" />
+          <span className="font-light tracking-wider">Back to Products</span>
+        </button>
+
+        <ProductDetail
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleAddToCart}
+          onAddReview={handleAddReview}
+        />
+
+        <AddToCartModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          productName={selectedProduct?.name || ''}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h1 className="text-4xl font-serif mb-12 text-center text-stone-800">Our Collection</h1>
@@ -204,21 +231,6 @@ const Shop = () => {
           </div>
         ))}
       </div>
-
-      {selectedProduct && (
-        <ProductDetail
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
-          onAddReview={handleAddReview}
-        />
-      )}
-
-      <AddToCartModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        productName={selectedProduct?.name || ''}
-      />
     </div>
   );
 };
