@@ -289,6 +289,37 @@ app.delete('/api/cart/:userEmail/clear', async (req, res) => {
   }
 });
 
+app.post('/api/products/:productId/reviews', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { userId, userName, rating, comment } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Add the new review
+    product.reviews.push({
+      userId,
+      userName,
+      rating,
+      comment,
+      createdAt: new Date()
+    });
+
+    // Save the product with the new review
+    await product.save();
+
+    // Return the updated product with populated collection
+    const updatedProduct = await Product.findById(productId).populate('collection');
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));

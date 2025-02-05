@@ -67,18 +67,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       alert('Please select a rating');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       await onAddReview(product._id, rating, comment);
       setRating(0);
       setComment('');
+      alert('Review submitted successfully!');
     } catch (error) {
       console.error('Error submitting review:', error);
       alert('Failed to submit review');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStarClick = (selectedRating: number) => {
+    setRating(selectedRating);
   };
 
   return (
@@ -92,14 +97,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            
+
             <div className="relative h-96">
               <img
                 src={allImages[currentImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-              
+
               {allImages.length > 1 && (
                 <>
                   <button
@@ -117,7 +122,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 </>
               )}
             </div>
-            
+
             <div className="flex gap-2 p-4 overflow-x-auto">
               {allImages.map((img, index) => (
                 <button
@@ -136,7 +141,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             <h2 className="text-2xl font-bold mb-2">{product.name}</h2>
             <p className="text-xl font-semibold mb-4">QAR{product.price}</p>
             <p className="text-gray-600 mb-6">{product.description}</p>
-            
+
             <div className="flex items-center gap-2 mb-6">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -161,7 +166,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
           <div className="border-t p-6">
             <h3 className="text-xl font-bold mb-4">Reviews</h3>
-            
+
             {user && (
               <form onSubmit={handleSubmitReview} className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -169,18 +174,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     <button
                       key={star}
                       type="button"
-                      onClick={() => setRating(star)}
-                      className="focus:outline-none"
+                      onClick={() => handleStarClick(star)}
+                      className="focus:outline-none transition-colors"
                     >
                       <Star
-                        className={`w-6 h-6 ${
+                        className={`w-6 h-6 cursor-pointer hover:text-yellow-400 ${
                           rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
                         }`}
                       />
                     </button>
                   ))}
+                  <span className="text-sm text-gray-600 ml-2">
+                    {rating > 0 ? `${rating} star${rating > 1 ? 's' : ''}` : 'Select rating'}
+                  </span>
                 </div>
-                
+
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -189,10 +197,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   rows={3}
                   required
                 />
-                
+
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || rating === 0}
                   className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Review'}
