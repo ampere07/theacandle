@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { Star } from 'lucide-react';
 import AddToCartModal from '../components/AddToCartModal';
 import ProductDetail from '../components/ProductDetail';
 import axios from 'axios';
@@ -70,7 +71,7 @@ const Shop = () => {
     try {
       setIsAddingToCart(true);
       setError(null);
-      
+
       const cartItem = {
         id: product._id,
         name: product.name,
@@ -78,7 +79,7 @@ const Shop = () => {
         quantity: 1,
         image: product.image
       };
-      
+
       await addToCart(cartItem);
       setModalOpen(true);
       setSelectedProduct(null);
@@ -104,11 +105,11 @@ const Shop = () => {
         userName: user.email.split('@')[0]
       });
 
-      const updatedProducts = products.map(p => 
+      const updatedProducts = products.map(p =>
         p._id === productId ? response.data : p
       );
       setProducts(updatedProducts);
-      
+
       if (selectedProduct?._id === productId) {
         setSelectedProduct(response.data);
       }
@@ -131,7 +132,7 @@ const Shop = () => {
           {error}
         </div>
       )}
-      
+
       <div className="mb-12 flex justify-center">
         <div className="inline-flex rounded-none shadow-sm" role="group">
           <button
@@ -183,7 +184,22 @@ const Shop = () => {
             <div className="p-6">
               <h2 className="text-xl font-sans-serif mb-2 text-stone-800">{product.name}</h2>
               <p className="text-stone-600 mb-2 font-light">QAR{product.price}</p>
-              <p className="text-sm text-stone-500 mb-6 font-light">{product.description}</p>
+              <div className="flex items-center gap-1.5 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-4 h-4 ${
+                      product.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+                <span className="text-sm text-stone-500 ml-1 font-light">
+                  {product.rating > 0
+                    ? `${product.rating.toFixed(1)} (${product.reviews?.length || 0})`
+                    : 'No reviews yet'}
+                </span>
+              </div>
+              <p className="text-sm text-stone-500 mb-6 font-light line-clamp-2">{product.description}</p>
             </div>
           </div>
         ))}
@@ -198,9 +214,9 @@ const Shop = () => {
         />
       )}
 
-      <AddToCartModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
+      <AddToCartModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
         productName={selectedProduct?.name || ''}
       />
     </div>
