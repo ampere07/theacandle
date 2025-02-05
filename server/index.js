@@ -38,7 +38,12 @@ const storage = new CloudinaryStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    files: 10 // Increase the limit of total files that can be uploaded
+  }
+});
 
 app.get('/api/collections', async (req, res) => {
   try {
@@ -69,18 +74,23 @@ app.get('/api/orders', async (req, res) => {
 
 app.post('/api/products', upload.fields([
   { name: 'image', maxCount: 1 },
-  { name: 'additionalImages', maxCount: 5 }
+  { name: 'additionalImages', maxCount: 10 } // Increase maxCount to allow more additional images
 ]), async (req, res) => {
   try {
     const { name, price, description, collection } = req.body;
 
+    // Get the main image path
     const mainImage = req.files['image']?.[0]?.path;
-    const additionalImages = req.files['additionalImages']?.map(file => file.path) || [];
-
     if (!mainImage) {
       return res.status(400).json({ error: 'Main image is required' });
     }
 
+    // Get all additional image paths
+    const additionalImages = req.files['additionalImages']
+      ? req.files['additionalImages'].map(file => file.path)
+      : [];
+
+    // Create and save the product
     const product = new Product({
       name,
       price: Number(price),
@@ -92,6 +102,7 @@ app.post('/api/products', upload.fields([
 
     await product.save();
 
+    // Return the populated product
     const populatedProduct = await Product.findById(product._id).populate('collection');
     res.status(201).json(populatedProduct);
   } catch (error) {
