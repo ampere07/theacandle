@@ -86,11 +86,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="max-w-6xl mx-auto bg-white">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Image Gallery Section */}
         <div className="p-6">
-          <div className="relative h-[400px] rounded-lg overflow-hidden mb-4">
+          <div className="relative h-[400px] overflow-hidden mb-4">
             <img
               src={allImages[currentImageIndex]}
               alt={product.name}
@@ -100,13 +100,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <>
                 <button
                   onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 rounded-full shadow-md hover:bg-white transition-colors"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 hover:bg-white transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 rounded-full shadow-md hover:bg-white transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 hover:bg-white transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -119,9 +119,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`w-16 h-16 flex-shrink-0 rounded-md overflow-hidden transition-all
+                className={`w-16 h-16 flex-shrink-0 border overflow-hidden transition-all
                   ${currentImageIndex === index
-                    ? 'ring-2 ring-black ring-offset-2'
+                    ? 'border-black'
                     : 'opacity-70 hover:opacity-100'}`}
               >
                 <img
@@ -141,7 +141,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <h2 className="text-2xl font-semibold mb-2">{product.name}</h2>
               <p className="text-xl font-medium text-gray-900">QAR {product.price.toLocaleString()}</p>
             </div>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <button className="p-2 hover:bg-gray-100 transition-colors">
               <Heart className="w-6 h-6" />
             </button>
           </div>
@@ -164,7 +164,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
           <button
             onClick={() => onAddToCart(product)}
-            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-all hover:shadow-md"
+            className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-all"
           >
             Add to Cart
           </button>
@@ -177,7 +177,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           <h3 className="text-xl font-semibold mb-6">Customer Reviews</h3>
 
           {user && (
-            <form onSubmit={handleSubmitReview} className="mb-8 bg-gray-50 p-4 rounded-lg">
+            <form onSubmit={handleSubmitReview} className="mb-8 bg-gray-50 p-4">
               <h4 className="font-medium mb-3">Write a Review</h4>
               <div className="flex items-center gap-1.5 mb-4">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -203,7 +203,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Share your thoughts about this product..."
-                className="w-full p-3 border rounded-lg mb-4 focus:ring-1 focus:ring-black focus:border-black"
+                className="w-full p-3 border mb-4 focus:ring-1 focus:ring-black focus:border-black"
                 rows={3}
                 required
               />
@@ -211,7 +211,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || rating === 0}
-                className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                className="bg-black text-white px-6 py-2 hover:bg-gray-800 transition-colors disabled:bg-gray-400"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Review'}
               </button>
