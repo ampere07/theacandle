@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import AddToCartModal from './AddToCartModal';
 
 interface Review {
@@ -32,16 +33,15 @@ interface Product {
 interface ProductDetailProps {
   product: Product;
   onClose: () => void;
-  onAddToCart: (product: Product) => Promise<void>;
   onAddReview: (productId: string, rating: number, comment: string) => Promise<void>;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
   product,
-  onAddToCart,
   onAddReview
 }) => {
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -67,7 +67,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
     setIsAddingToCart(true);
     try {
-      await onAddToCart(product);
+      await addToCart({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1
+      });
       setShowAddToCartModal(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -265,11 +271,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
       </div>
 
-      <AddToCartModal
-        isOpen={showAddToCartModal}
-        onClose={() => setShowAddToCartModal(false)}
-        productName={product.name}
-      />
+      {showAddToCartModal && (
+        <AddToCartModal
+          isOpen={showAddToCartModal}
+          onClose={() => setShowAddToCartModal(false)}
+          productName={product.name}
+        />
+      )}
     </>
   );
 };

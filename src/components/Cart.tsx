@@ -18,9 +18,17 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleQuantityUpdate = async (id: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+      handleRemoveItem(id);
+      return;
+    }
+
     try {
       setIsUpdating(id);
       await updateQuantity(id, newQuantity);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      alert('Failed to update quantity');
     } finally {
       setIsUpdating(null);
     }
@@ -30,6 +38,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
     try {
       setIsUpdating(id);
       await removeFromCart(id);
+    } catch (error) {
+      console.error('Error removing item:', error);
+      alert('Failed to remove item');
     } finally {
       setIsUpdating(null);
     }
@@ -42,8 +53,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-lg font-medium">Shopping Cart</h2>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Close cart"
             >
@@ -68,8 +79,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item) => (
-                      <div 
-                        key={item.id} 
+                      <div
+                        key={item.id}
                         className={`flex items-center space-x-4 border-b pb-4 relative ${
                           isUpdating === item.id ? 'opacity-50' : ''
                         }`}
