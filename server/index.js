@@ -185,6 +185,10 @@ app.delete('/api/collections/:id', async (req, res) => {
 app.get('/api/cart/:userEmail', async (req, res) => {
   try {
     const { userEmail } = req.params;
+    if (!userEmail) {
+      return res.status(400).json({ error: 'User email is required' });
+    }
+
     const cart = await Cart.findOne({ userEmail })
       .populate({
         path: 'items.productId',
@@ -196,17 +200,20 @@ app.get('/api/cart/:userEmail', async (req, res) => {
       return res.json({ items: [] });
     }
 
-    const formattedItems = cart.items.map(item => ({
-      id: item.productId._id,
-      name: item.productId.name,
-      price: item.productId.price,
-      image: item.productId.image,
-      quantity: item.quantity
-    }));
+    const formattedItems = cart.items
+      .filter(item => item.productId) // Filter out any items with missing products
+      .map(item => ({
+        id: item.productId._id,
+        name: item.productId.name,
+        price: item.productId.price,
+        image: item.productId.image,
+        quantity: item.quantity
+      }));
 
     res.json({ items: formattedItems });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Cart fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch cart', details: error.message });
   }
 });
 
@@ -215,18 +222,28 @@ app.post('/api/cart/:userEmail/add', async (req, res) => {
     const { userEmail } = req.params;
     const { productId, quantity = 1 } = req.body;
 
+    if (!userEmail || !productId) {
+      return res.status(400).json({ error: 'User email and product ID are required' });
+    }
+
+    // Verify product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
     let cart = await Cart.findOne({ userEmail });
 
     if (!cart) {
       cart = new Cart({ userEmail, items: [] });
     }
 
-    const existingItem = cart.items.find(item =>
+    const existingItemIndex = cart.items.findIndex(item =>
       item.productId.toString() === productId
     );
 
-    if (existingItem) {
-      existingItem.quantity += quantity;
+    if (existingItemIndex !== -1) {
+      cart.items[existingItemIndex].quantity += quantity;
     } else {
       cart.items.push({ productId, quantity });
     }
@@ -234,23 +251,27 @@ app.post('/api/cart/:userEmail/add', async (req, res) => {
     cart.updatedAt = new Date();
     await cart.save();
 
-    const updatedCart = await Cart.findById(cart._id).populate({
-      path: 'items.productId',
-      model: 'Product',
-      select: 'name price image'
-    });
+    const updatedCart = await Cart.findById(cart._id)
+      .populate({
+        path: 'items.productId',
+        model: 'Product',
+        select: 'name price image'
+      });
 
-    const formattedItems = updatedCart.items.map(item => ({
-      id: item.productId._id,
-      name: item.productId.name,
-      price: item.productId.price,
-      image: item.productId.image,
-      quantity: item.quantity
-    }));
+    const formattedItems = updatedCart.items
+      .filter(item => item.productId) // Filter out any items with missing products
+      .map(item => ({
+        id: item.productId._id,
+        name: item.productId.name,
+        price: item.productId.price,
+        image: item.productId.image,
+        quantity: item.quantity
+      }));
 
     res.json({ items: formattedItems });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Cart add error:', error);
+    res.status(500).json({ error: 'Failed to add item to cart', details: error.message });
   }
 });
 

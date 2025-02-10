@@ -35,6 +35,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}`, {
         method: 'GET',
         headers: {
@@ -45,8 +46,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setCartItems(data.items || []);
     } catch (error) {
@@ -62,7 +65,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.email]);
 
   const addToCart = async (item: CartItem) => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      throw new Error('User must be logged in to add items to cart');
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/add`, {
@@ -76,7 +81,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -88,7 +94,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateQuantity = async (id: string, quantity: number) => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      throw new Error('User must be logged in to update cart');
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/update`, {
@@ -102,7 +110,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -114,11 +123,38 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = async (id: string) => {
-    await updateQuantity(id, 0);
+    if (!user?.email) {
+      throw new Error('User must be logged in to remove items from cart');
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ productId: id, quantity: 0 })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCartItems(data.items || []);
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      throw error;
+    }
   };
 
   const clearCart = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      throw new Error('User must be logged in to clear cart');
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/clear`, {
@@ -131,7 +167,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
