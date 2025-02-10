@@ -35,7 +35,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}`);
+      const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -55,11 +63,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = async (item: CartItem) => {
     if (!user?.email) return;
-    
+
     try {
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/add`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -85,7 +93,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/update`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -116,6 +124,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await fetch(`${API_URL}/api/cart/${encodeURIComponent(user.email)}/clear`, {
         method: 'DELETE',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         credentials: 'include'
