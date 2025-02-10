@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import AddToCartModal from './AddToCartModal';
 
 interface Review {
@@ -33,15 +32,16 @@ interface Product {
 interface ProductDetailProps {
   product: Product;
   onClose: () => void;
+  onAddToCart: (product: Product) => Promise<void>;
   onAddReview: (productId: string, rating: number, comment: string) => Promise<void>;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
   product,
+  onAddToCart,
   onAddReview
 }) => {
   const { user } = useAuth();
-  const { addToCart } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -67,16 +67,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
     setIsAddingToCart(true);
     try {
-      // Convert the product to match the CartItem interface
-      const cartItem = {
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        image: product.image
-      };
-
-      await addToCart(cartItem);
+      await onAddToCart(product);
       setShowAddToCartModal(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
