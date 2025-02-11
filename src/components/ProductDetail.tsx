@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import AddToCartModal from './AddToCartModal';
+import { filterComment } from '../utils/profanityFilter';
 import axios from 'axios';
 
 const API_URL = 'https://theacandle.onrender.com';
@@ -147,7 +148,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onAddReview(product._id, rating, comment);
+      // Filter the comment before submitting
+      const filteredComment = filterComment(comment);
+      await onAddReview(product._id, rating, filteredComment);
       setRating(0);
       setComment('');
       alert('Review submitted successfully!');
@@ -314,7 +317,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   <p className="text-sm text-gray-600 mb-2">
                     By {review.userName} · {new Date(review.createdAt).toLocaleDateString()}
                   </p>
-                  <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                  <p className="text-gray-700 leading-relaxed">{filterComment(review.comment)}</p>
                 </div>
               ))}
             </div>
