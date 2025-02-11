@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import AddToCartModal from './AddToCartModal';
+import axios from 'axios';
+
+const API_URL = 'https://theacandle.onrender.com';
 
 interface Review {
   userId: string;
@@ -48,15 +51,63 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddToCartModal, setShowAddToCartModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  const allImages = [product.image, ...(product.additionalImages || [])];
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!user?.email) return;
+
+      try {
+        const response = await axios.get(`${API_URL}/api/favorites/${user.email}`);
+        const favorites = response.data;
+        setIsFavorite(favorites.some(fav => fav.productId._id === product._id));
+      } catch (error) {
+        console.error('Error checking favorite status:', error);
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [user?.email, product._id]);
+
+  const handleToggleFavorite = async () => {
+    if (!user?.email) {
+      alert('Please log in to favorite products');
+      return;
+    }
+
+    try {
+      setIsTogglingFavorite(true);
+
+      if (isFavorite) {
+        await axios.delete(`${API_URL}/api/favorites`, {
+          data: {
+            userEmail: user.email,
+            productId: product._id
+          }
+        });
+      } else {
+        await axios.post(`${API_URL}/api/favorites`, {
+          userEmail: user.email,
+          productId: product._id
+        });
+      }
+
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite status');
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+    setCurrentImageIndex((prev) => (prev === 0 ? product.additionalImages.length - 1 : prev - 1));
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+    setCurrentImageIndex((prev) => (prev === product.additionalImages.length - 1 ? 0 : prev + 1));
   };
 
   const handleAddToCart = async () => {
@@ -108,23 +159,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     }
   };
 
-  const handleStarClick = (selectedRating: number) => {
-    setRating(selectedRating);
-  };
-
   return (
     <>
       <div className="max-w-6xl mx-auto bg-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Image Gallery Section */}
           <div className="p-6">
             <div className="relative h-[400px] overflow-hidden mb-4">
               <img
-                src={allImages[currentImageIndex]}
+                src={product.image}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-              {allImages.length > 1 && (
+              {product.additionalImages.length > 0 && (
                 <>
                   <button
                     onClick={handlePrevImage}
@@ -143,14 +189,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {allImages.map((img, index) => (
+              {product.additionalImages.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
                   className={`w-16 h-16 flex-shrink-0 border overflow-hidden transition-all
-                    ${currentImageIndex === index
-                      ? 'border-black'
-                      : 'opacity-70 hover:opacity-100'}`}
+                    ${currentImageIndex === index ? 'border-black' : 'opacity-70 hover:opacity-100'}`}
                 >
                   <img
                     src={img}
@@ -162,15 +206,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             </div>
           </div>
 
-          {/* Product Info Section */}
           <div className="p-6 flex flex-col">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-2xl font-semibold mb-2">{product.name}</h2>
                 <p className="text-xl font-medium text-gray-900">QAR {product.price.toLocaleString()}</p>
               </div>
-              <button className="p-2 hover:bg-gray-100 transition-colors">
-                <Heart className="w-6 h-6" />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleFavorite();
+                }}
+                disabled={isTogglingFavorite}
+                className={`p-2 hover:bg-gray-100 transition-colors ${
+                  isFavorite ? 'text-red-500' : 'text-gray-400'
+                }`}
+              >
+                <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
             </div>
 
@@ -200,7 +252,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           </div>
         </div>
 
-        {/* Reviews Section */}
         <div className="border-t">
           <div className="max-w-3xl mx-auto p-6">
             <h3 className="text-xl font-semibold mb-6">Customer Reviews</h3>
@@ -213,7 +264,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     <button
                       key={star}
                       type="button"
-                      onClick={() => handleStarClick(star)}
+                      onClick={() => setRating(star)}
                       className="focus:outline-none transition-colors"
                     >
                       <Star

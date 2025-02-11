@@ -9,6 +9,7 @@ import { Order } from './models/Order.js';
 import { Collection } from './models/Collection.js';
 import { Product } from './models/Product.js';
 import { Cart } from './models/Cart.js';
+import { Favorite } from './models/Favorite.js';
 
 dotenv.config();
 
@@ -363,6 +364,57 @@ app.post('/api/products/:productId/reviews', async (req, res) => {
     res.json(updatedProduct);
   } catch (error) {
     console.error('Error adding review:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+//favorite function
+app.post('/api/favorites', async (req, res) => {
+  try {
+    const { userEmail, productId } = req.body;
+
+    if (!userEmail || !productId) {
+      return res.status(400).json({ error: 'User email and product ID are required' });
+    }
+
+    const favorite = new Favorite({
+      userEmail,
+      productId
+    });
+
+    await favorite.save();
+    res.status(201).json(favorite);
+  } catch (error) {
+    if (error.code === 11000) { // Duplicate key error
+      return res.status(400).json({ error: 'Product already in favorites' });
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/favorites', async (req, res) => {
+  try {
+    const { userEmail, productId } = req.body;
+
+    if (!userEmail || !productId) {
+      return res.status(400).json({ error: 'User email and product ID are required' });
+    }
+
+    await Favorite.findOneAndDelete({ userEmail, productId });
+    res.json({ message: 'Favorite removed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/favorites/:userEmail', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+    const favorites = await Favorite.find({ userEmail })
+      .populate('productId')
+      .sort({ createdAt: -1 });
+    res.json(favorites);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

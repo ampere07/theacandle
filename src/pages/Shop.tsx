@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Star, ArrowLeft } from 'lucide-react';
+import { Star, ArrowLeft, Heart } from 'lucide-react';
 import AddToCartModal from '../components/AddToCartModal';
 import ProductDetail from '../components/ProductDetail';
 import axios from 'axios';
 
 const API_URL = 'https://theacandle.onrender.com';
 
-// Configure axios defaults
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Accept'] = 'application/json';
 
@@ -49,6 +48,8 @@ const Shop = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,18 +58,8 @@ const Shop = () => {
         setError(null);
 
         const [productsRes, collectionsRes] = await Promise.all([
-          axios.get(`${API_URL}/api/products`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Origin': window.location.origin
-            }
-          }),
-          axios.get(`${API_URL}/api/collections`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Origin': window.location.origin
-            }
-          })
+          axios.get(`${API_URL}/api/products`),
+          axios.get(`${API_URL}/api/collections`)
         ]);
 
         setProducts(productsRes.data);
@@ -80,8 +71,24 @@ const Shop = () => {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user?.email) return;
+
+      try {
+        const response = await axios.get(`${API_URL}/api/favorites/${user.email}`);
+        setFavorites(response.data.map(fav => fav.productId._id));
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      }
+    };
+
+    fetchFavorites();
+  }, [user?.email]);
 
   const handleAddToCart = async (product: Product) => {
     if (!user?.email) {
@@ -126,12 +133,6 @@ const Shop = () => {
           comment,
           userId: user.email,
           userName: user.email.split('@')[0]
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Origin': window.location.origin
-          }
         }
       );
 
@@ -149,7 +150,9 @@ const Shop = () => {
     }
   };
 
-  const filteredProducts = selectedCollection === 'all'
+  const filteredProducts = showFavorites
+    ? products.filter(product => favorites.includes(product._id))
+    : selectedCollection === 'all'
     ? products
     : products.filter(product => product.collection?._id === selectedCollection);
 
@@ -167,7 +170,6 @@ const Shop = () => {
         <ProductDetail
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
           onAddReview={handleAddReview}
         />
 
@@ -196,13 +198,16 @@ const Shop = () => {
         </div>
       ) : (
         <>
-          <div className="mb-12 flex justify-center">
+          <div className="mb-12 flex justify-center flex-wrap gap-4">
             <div className="inline-flex rounded-none shadow-sm" role="group">
               <button
                 key="all"
-                onClick={() => setSelectedCollection('all')}
+                onClick={() => {
+                  setSelectedCollection('all');
+                  setShowFavorites(false);
+                }}
                 className={`px-6 py-2.5 text-sm font-light tracking-wider border ${
-                  selectedCollection === 'all'
+                  selectedCollection === 'all' && !showFavorites
                     ? 'bg-stone-800 text-beige-50 border-stone-800'
                     : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
                 }`}
@@ -212,9 +217,12 @@ const Shop = () => {
               {collections.map((collection) => (
                 <button
                   key={collection._id}
-                  onClick={() => setSelectedCollection(collection._id)}
+                  onClick={() => {
+                    setSelectedCollection(collection._id);
+                    setShowFavorites(false);
+                  }}
                   className={`px-6 py-2.5 text-sm font-light tracking-wider border-t border-b border-r ${
-                    selectedCollection === collection._id
+                    selectedCollection === collection._id && !showFavorites
                       ? 'bg-stone-800 text-beige-50 border-stone-800'
                       : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
                   }`}
@@ -223,6 +231,23 @@ const Shop = () => {
                 </button>
               ))}
             </div>
+
+            {user && (
+              <button
+                onClick={() => {
+                  setShowFavorites(!showFavorites);
+                  setSelectedCollection('all');
+                }}
+                className={`px-6 py-2.5 text-sm font-light tracking-wider border flex items-center gap-2 ${
+                  showFavorites
+                    ? 'bg-stone-800 text-beige-50 border-stone-800'
+                    : 'bg-beige-50 text-stone-700 border-stone-300 hover:bg-beige-100'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
+                Favorites
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
