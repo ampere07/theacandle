@@ -37,6 +37,12 @@ interface Product {
   reviews: Review[];
 }
 
+interface FavoriteProduct {
+  _id: string;
+  userEmail: string;
+  productId: string;
+}
+
 const Shop = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -50,6 +56,7 @@ const Shop = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +88,9 @@ const Shop = () => {
 
       try {
         const response = await axios.get(`${API_URL}/api/favorites/${user.email}`);
-        setFavorites(response.data.map(fav => fav.productId._id));
+        const favoriteIds = response.data.map((fav: { productId: Product }) => fav.productId._id);
+        setFavorites(favoriteIds);
+        setFavoriteCount(favoriteIds.length);
       } catch (error) {
         console.error('Error fetching favorites:', error);
       }
@@ -150,6 +159,7 @@ const Shop = () => {
     }
   };
 
+  // Filter products based on favorites and collection
   const filteredProducts = showFavorites
     ? products.filter(product => favorites.includes(product._id))
     : selectedCollection === 'all'
@@ -245,7 +255,7 @@ const Shop = () => {
                 }`}
               >
                 <Heart className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
-                Favorites
+                Favorites ({favoriteCount})
               </button>
             )}
           </div>
