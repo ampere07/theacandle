@@ -64,7 +64,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       try {
         const response = await axios.get(`${API_URL}/api/favorites/${user.email}`);
         const favorites = response.data;
-        setIsFavorite(favorites.some(fav => fav.productId._id === product._id));
+        setIsFavorite(favorites.some((fav: { productId: { _id: string } }) =>
+          fav.productId._id === product._id
+        ));
       } catch (error) {
         console.error('Error checking favorite status:', error);
       }
@@ -83,6 +85,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       setIsTogglingFavorite(true);
 
       if (isFavorite) {
+        // Remove from favorites
         await axios.delete(`${API_URL}/api/favorites`, {
           data: {
             userEmail: user.email,
@@ -90,6 +93,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           }
         });
       } else {
+        // Add to favorites
         await axios.post(`${API_URL}/api/favorites`, {
           userEmail: user.email,
           productId: product._id
@@ -97,6 +101,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       }
 
       setIsFavorite(!isFavorite);
+
+      // Trigger a re-fetch of favorites in the parent component
+      // This ensures the favorites list stays in sync
+      const event = new CustomEvent('favoritesUpdated');
+      window.dispatchEvent(event);
     } catch (error) {
       console.error('Error toggling favorite:', error);
       alert('Failed to update favorite status');
