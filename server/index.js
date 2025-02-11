@@ -19,12 +19,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const express = require('express');
-const cors = require('cors');
-
 const app = express();
 
-// Enable CORS
+// CORS configuration
 app.use(cors({
   origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
@@ -33,18 +30,10 @@ app.use(cors({
   exposedHeaders: ['Access-Control-Allow-Origin']
 }));
 
-// Middleware to manually set headers
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://reignco.vercel.app");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
-
-// Handle preflight requests
+// Add CORS preflight
 app.options('*', cors());
 
+// Parse JSON bodies
 app.use(express.json());
 
 // Add security headers middleware
