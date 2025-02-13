@@ -18,8 +18,8 @@ const MEETUP_LOCATIONS = [
 ];
 
 const BASE_FARE = 10;
-const RATE_PER_KM = 2.5;
-const MIN_DELIVERY_FEE = 15;
+const RATE_PER_KM = 1.5;
+const MIN_DELIVERY_FEE = 10;
 
 const defaultIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
