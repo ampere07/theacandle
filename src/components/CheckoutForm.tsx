@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import { MapPin } from 'lucide-react';
@@ -17,12 +17,10 @@ const MEETUP_LOCATIONS = [
   { id: 'megamall', name: 'SM Megamall', address: 'Ortigas Center, Mandaluyong City' },
 ];
 
-// Delivery fee constants
-const BASE_FARE = 10; // Base delivery fee in QAR
-const RATE_PER_KM = 2.5; // Additional fee per kilometer in QAR
-const MIN_DELIVERY_FEE = 15; // Minimum delivery fee in QAR
+const BASE_FARE = 10;
+const RATE_PER_KM = 2.5;
+const MIN_DELIVERY_FEE = 15;
 
-// Fix for the default marker icon
 const defaultIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -31,17 +29,16 @@ const defaultIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-// Doha, Qatar coordinates
 const DOHA_CENTER = [25.2854, 51.5310];
-const SELLER_LOCATION = [25.2606, 51.4506]; // Nuaija coordinates
+const SELLER_LOCATION = [25.2606, 51.4506];
 const QATAR_BOUNDS = new LatLngBounds(
-  [24.4539, 50.7500], // Southwest
-  [26.1834, 51.6834]  // Northeast
+  [24.4539, 50.7500],
+  [26.1834, 51.6834]
 );
 
 function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLng) => void }) {
   const [position, setPosition] = useState<LatLng | null>(null);
-  
+
   useMapEvents({
     click(e) {
       if (QATAR_BOUNDS.contains(e.latlng)) {
@@ -56,12 +53,8 @@ function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLn
   return (
     <>
       {position && <Marker position={position} icon={defaultIcon} />}
-      <Marker 
-        position={SELLER_LOCATION as [number, number]} 
-        icon={defaultIcon}
-      >
-      </Marker>
-      <Circle 
+      <Marker position={SELLER_LOCATION as [number, number]} icon={defaultIcon} />
+      <Circle
         center={SELLER_LOCATION as [number, number]}
         radius={1000}
         pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.2 }}
@@ -70,23 +63,21 @@ function LocationMarker({ onLocationChange }: { onLocationChange: (latlng: LatLn
   );
 }
 
-// Function to calculate distance between two points using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in kilometers
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
 }
 
-// Function to calculate delivery fee
 function calculateDeliveryFee(distance: number): number {
   const fee = BASE_FARE + (distance * RATE_PER_KM);
-  return Math.max(MIN_DELIVERY_FEE, Math.round(fee * 2) / 2); // Round to nearest 0.5
+  return Math.max(MIN_DELIVERY_FEE, Math.round(fee * 2) / 2);
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
@@ -111,7 +102,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       const response = await axios.get(
         `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`
       );
-      
+
       if (response.data.display_name) {
         const distance = calculateDistance(
           SELLER_LOCATION[0],
@@ -120,7 +111,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
           latlng.lng
         );
         const fee = calculateDeliveryFee(distance);
-        
+
         setDeliveryFee(fee);
         setFormData({
           ...formData,
@@ -136,21 +127,37 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const orderItems = cartItems.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity
+      }));
+
       const orderData = {
-        ...formData,
-        address: formData.paymentMethod === 'meetup' 
-          ? MEETUP_LOCATIONS.find(loc => loc.id === formData.meetupLocation)?.address 
+        name: formData.name,
+        contact: formData.contact,
+        address: formData.paymentMethod === 'meetup'
+          ? MEETUP_LOCATIONS.find(loc => loc.id === formData.meetupLocation)?.address
           : formData.address,
-        items: cartItems,
+        paymentMethod: formData.paymentMethod,
+        meetupLocation: formData.paymentMethod === 'meetup' ? formData.meetupLocation : undefined,
+        coordinates: formData.paymentMethod === 'cod' ? formData.coordinates : undefined,
+        items: orderItems,
         deliveryFee: formData.paymentMethod === 'cod' ? deliveryFee : 0,
         subtotal,
         total
       };
 
-      await axios.post(`${API_URL}/api/orders`, orderData);
-      clearCart();
-      onCancel();
-      alert('Order placed successfully!');
+      const response = await axios.post(`${API_URL}/api/orders`, orderData);
+
+      if (response.status === 201) {
+        clearCart();
+        onCancel();
+        alert('Order placed successfully!');
+      } else {
+        throw new Error('Failed to place order');
+      }
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Failed to place order. Please try again.');
@@ -160,7 +167,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   return (
     <form onSubmit={handleSubmit} className="p-4 space-y-4 max-h-[80vh] overflow-y-auto">
       <h2 className="text-xl font-medium mb-4">Checkout</h2>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Name</label>
         <input
@@ -244,7 +251,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
         </div>
       )}
 
-      {/* Order Summary */}
       <div className="mt-6 border-t pt-4">
         <h3 className="text-lg font-medium mb-2">Order Summary</h3>
         <div className="space-y-2">

@@ -21,7 +21,6 @@ cloudinary.config({
 
 const app = express();
 
-// CORS configuration
 app.use(cors({
   origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
@@ -30,13 +29,10 @@ app.use(cors({
   exposedHeaders: ['Access-Control-Allow-Origin']
 }));
 
-// Add CORS preflight
 app.options('*', cors());
 
-// Parse JSON bodies
 app.use(express.json());
 
-// Add security headers middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Origin', req.headers.origin);
@@ -57,7 +53,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    files: 10 // Increase the limit of total files that can be uploaded
+    files: 10
   }
 });
 
@@ -88,25 +84,34 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+app.post('/api/orders', async (req, res) => {
+  try {
+    const orderData = req.body;
+    const order = new Order(orderData);
+    await order.save();
+    res.status(201).json(order);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/products', upload.fields([
   { name: 'image', maxCount: 1 },
-  { name: 'additionalImages', maxCount: 10 } // Increase maxCount to allow more additional images
+  { name: 'additionalImages', maxCount: 10 }
 ]), async (req, res) => {
   try {
     const { name, price, description, collection } = req.body;
 
-    // Get the main image path
     const mainImage = req.files['image']?.[0]?.path;
     if (!mainImage) {
       return res.status(400).json({ error: 'Main image is required' });
     }
 
-    // Get all additional image paths
     const additionalImages = req.files['additionalImages']
       ? req.files['additionalImages'].map(file => file.path)
       : [];
 
-    // Create and save the product
     const product = new Product({
       name,
       price: Number(price),
@@ -118,7 +123,6 @@ app.post('/api/products', upload.fields([
 
     await product.save();
 
-    // Return the populated product
     const populatedProduct = await Product.findById(product._id).populate('collection');
     res.status(201).json(populatedProduct);
   } catch (error) {
@@ -202,7 +206,7 @@ app.get('/api/cart/:userEmail', async (req, res) => {
     }
 
     const formattedItems = cart.items
-      .filter(item => item.productId) // Filter out any items with missing products
+      .filter(item => item.productId)
       .map(item => ({
         id: item.productId._id,
         name: item.productId.name,
@@ -227,7 +231,6 @@ app.post('/api/cart/:userEmail/add', async (req, res) => {
       return res.status(400).json({ error: 'User email and product ID are required' });
     }
 
-    // Verify product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -260,7 +263,7 @@ app.post('/api/cart/:userEmail/add', async (req, res) => {
       });
 
     const formattedItems = updatedCart.items
-      .filter(item => item.productId) // Filter out any items with missing products
+      .filter(item => item.productId)
       .map(item => ({
         id: item.productId._id,
         name: item.productId.name,
@@ -347,7 +350,6 @@ app.post('/api/products/:productId/reviews', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Add the new review
     product.reviews.push({
       userId,
       userName,
@@ -356,10 +358,8 @@ app.post('/api/products/:productId/reviews', async (req, res) => {
       createdAt: new Date()
     });
 
-    // Save the product with the new review
     await product.save();
 
-    // Return the updated product with populated collection
     const updatedProduct = await Product.findById(productId).populate('collection');
     res.json(updatedProduct);
   } catch (error) {
@@ -368,7 +368,6 @@ app.post('/api/products/:productId/reviews', async (req, res) => {
   }
 });
 
-//favorite function
 app.post('/api/favorites', async (req, res) => {
   try {
     const { userEmail, productId } = req.body;
@@ -385,7 +384,7 @@ app.post('/api/favorites', async (req, res) => {
     await favorite.save();
     res.status(201).json(favorite);
   } catch (error) {
-    if (error.code === 11000) { // Duplicate key error
+    if (error.code === 11000) {
       return res.status(400).json({ error: 'Product already in favorites' });
     }
     res.status(500).json({ error: error.message });
