@@ -99,9 +99,21 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
 
   const handleLocationChange = async (latlng: LatLng) => {
     try {
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`
-      );
+      const nominatimInstance = axios.create({
+        baseURL: 'https://nominatim.openstreetmap.org',
+        headers: {
+          'User-Agent': 'ReignCo Store Application'
+        }
+      });
+
+      const response = await nominatimInstance.get('/reverse', {
+        params: {
+          lat: latlng.lat,
+          lon: latlng.lng,
+          format: 'json'
+        },
+        withCredentials: false
+      });
 
       if (response.data.display_name) {
         const distance = calculateDistance(
@@ -121,6 +133,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       }
     } catch (error) {
       console.error('Error getting address:', error);
+      const distance = calculateDistance(
+        SELLER_LOCATION[0],
+        SELLER_LOCATION[1],
+        latlng.lat,
+        latlng.lng
+      );
+      const fee = calculateDeliveryFee(distance);
+
+      setDeliveryFee(fee);
+      setFormData({
+        ...formData,
+        address: `Location at ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`,
+        coordinates: { lat: latlng.lat, lng: latlng.lng }
+      });
     }
   };
 
