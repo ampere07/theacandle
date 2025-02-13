@@ -100,7 +100,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
   const handleLocationChange = async (latlng: LatLng) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json`
+        `${API_URL}/api/geocode/reverse?lat=${latlng.lat}&lon=${latlng.lng}`,
+        { withCredentials: true }
       );
 
       if (response.data.display_name) {
@@ -121,6 +122,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onCancel }) => {
       }
     } catch (error) {
       console.error('Error getting address:', error);
+      alert('Failed to get address information. Please try again.');
     }
   };
 
