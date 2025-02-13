@@ -10,6 +10,7 @@ import { Collection } from './models/Collection.js';
 import { Product } from './models/Product.js';
 import { Cart } from './models/Cart.js';
 import { Favorite } from './models/Favorite.js';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -21,23 +22,25 @@ cloudinary.config({
 
 const app = express();
 
-app.use(cors({
+const corsOptions = {
   origin: ['https://reignco.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Access-Control-Allow-Origin']
-}));
+};
 
-app.options('*', cors());
-
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+  const origin = req.headers.origin;
+  if (corsOptions.origin.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
   next();
 });
 
@@ -54,6 +57,24 @@ const upload = multer({
   storage: storage,
   limits: {
     files: 10
+  }
+});
+
+app.get('/api/geocode/reverse', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      {
+        headers: {
+          'User-Agent': 'TheaCandleApp/1.0'
+        }
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    res.status(500).json({ error: 'Failed to get address information' });
   }
 });
 
